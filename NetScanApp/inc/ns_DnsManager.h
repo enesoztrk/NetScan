@@ -15,14 +15,15 @@ struct S_DeviceInfo;
 class C_DnsManager{
 
 public:
-    C_DnsManager()=delete;
+     C_DnsManager(){};
      C_DnsManager(const S_DeviceInfo& host_dev_info):host_ip_mac{host_dev_info}{};
       pcpp::Packet& generate_dns_req(const pcpp::IPv4Address& scanipAddr);
      bool parse_dns_resp();
      std::string& get_hostname()const;
 private:
-    const S_DeviceInfo& host_ip_mac;
+
     std::string host_name_str{};
+       S_DeviceInfo host_ip_mac;
 };
 
 

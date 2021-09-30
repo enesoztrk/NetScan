@@ -44,12 +44,13 @@ public:
         return c_dns;
     }
 private:
+     dev_info_t dev_table{};
     T c_arp;
     U c_dns;
     std::unique_ptr<pcpp::PcapLiveDevice> dev;
     pcpp::IPv4Address low_bound_ip_addr{};
     pcpp::IPv4Address high_bound_ip_addr{};
-    dev_info_t dev_table{};
+
     bool add_dev_list(const pcpp::MacAddress&);//add mac address
     bool add_dev_list(const std::string&);//add dns hostname
     /**

@@ -32,7 +32,7 @@ struct S_DeviceInfo {
 class C_ArpManager{
 
 public:
-      C_ArpManager()=delete;
+    C_ArpManager(){};
       C_ArpManager(const S_DeviceInfo& host_dev_info);
       pcpp::Packet& generate_arp_req(const pcpp::IPv4Address& scanipAddr);
       bool parse_arp_resp();
