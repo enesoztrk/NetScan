@@ -1,7 +1,7 @@
 project(NetScanApp LANGUAGES CXX)
 
 
-#SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fno-elide-constructors")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -frtti")
 
 set(Sources__Packet
     "src/ns_ArpManager.cpp"

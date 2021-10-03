@@ -1,6 +1,6 @@
 project(NetScanApp-UnitTest LANGUAGES CXX)
 
-#SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fno-elide-constructors")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -frtti")
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GTEST  REQUIRED gtest)
 pkg_search_module(GMOCK  REQUIRED gmock)

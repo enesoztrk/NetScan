@@ -47,7 +47,7 @@ struct S_DeviceInfo {
 
     S_DeviceInfo(const pcpp::IPAddress& ip_param,const std::string& mac_param):ip{ip_param},mac_addr{mac_param}
        {
-            std::cout<<__PRETTY_FUNCTION__<<"\n";
+         //   std::cout<<__PRETTY_FUNCTION__<<"\n";
        }
 
 
@@ -55,6 +55,9 @@ struct S_DeviceInfo {
        bool operator==(const S_DeviceInfo &p) const {
            return  mac_addr == p.mac_addr;
        }
+
+
+       friend std::ostream& operator<<(std::ostream& os,const S_DeviceInfo& dev_info);
 
 };
 class hash_func {
@@ -74,6 +77,17 @@ public:
     }
 };
 using dev_info_t=std::unordered_map<S_DeviceInfo,hostname_t,hash_func>;
+
+
+inline std::ostream& operator<<(std::ostream& os,const S_DeviceInfo& dev_info){
+
+
+
+    return os<<"[Mac addr= "<<dev_info.mac_addr<<", Ip= "<<dev_info.ip.toString()<<" ]";
+
+
+}
+
 
 
 }
