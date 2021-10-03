@@ -122,11 +122,6 @@ TEST_F (TEST_ArpManager, generate_arp_req) {
         auto& dut_rawpacket3=dut_arpmanager3.generate_arp_req<Mock_Packet>(pcpp::IPv4Address("192.168.10.4"));
         EXPECT_EQ (test.getRawDataLen(), dut_rawpacket3.getRawDataLen());
 
-
-
-
-
-
 }
 
 

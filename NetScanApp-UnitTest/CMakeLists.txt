@@ -1,6 +1,20 @@
 project(NetScanApp-UnitTest LANGUAGES CXX)
 
 #SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -fno-elide-constructors")
+find_package(PkgConfig REQUIRED)
+pkg_search_module(GTEST  REQUIRED gtest)
+pkg_search_module(GMOCK  REQUIRED gmock)
+
+include_directories(${GTEST_INCLUDE_DIRS})
+link_directories(${GTEST_LIBRARY_DIRS})
+link_libraries(${GTEST_LIBRARIES})
+
+include_directories(${GMOCK_INCLUDE_DIRS})
+link_directories(${GMOCK_LIBRARY_DIRS})
+link_libraries(${GMOCK_LIBRARIES})
+
+message(STATUS "GTEST_LIBRARIES: ${GTEST_LIBRARIES} in ${GTEST_LIBRARY_DIRS}")
+message(STATUS "GMOCK_LIBRARIES: ${GMOCK_LIBRARIES} in ${GMOCK_LIBRARIES}")
 
 
 add_executable(${PROJECT_NAME} src/main.cpp inc/MockDnsManager.h inc/MockArpManager.h src/TEST_ArpManager.cpp inc/MockPacket.h)
