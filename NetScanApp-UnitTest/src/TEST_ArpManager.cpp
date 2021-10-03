@@ -17,7 +17,7 @@ public:
        // code here will execute just before the test ensues
 
         ns::Packet_mock_obj= new ns::Mock_Packet;
-        std::cout<<"SetUp=================>\n";
+        std::cout<<"SetUp\n";
    }
 
    void TearDown( ) {
@@ -25,7 +25,7 @@ public:
        // ok to through exceptions from here if need be
 
         delete ns::Packet_mock_obj;
-       std::cout<<"TearDown<=================\n";
+       std::cout<<"TearDown\n";
 
 
 
@@ -42,14 +42,14 @@ TEST_F (TEST_ArpManager, get_host_ip_mac) {
     S_DeviceInfo dev_info{ pcpp::IPAddress("192.168.50.2"),"aa:bb:cc:dd:ee:ff"};
     C_ArpManager dut_arpmanager(dev_info);
 
-    EXPECT_EQ (dev_info, dut_arpmanager.get_host_ip_mac());
+    EXPECT_EQ (dev_info, dut_arpmanager.get_netif_ip_mac());
 
 
     //Scenario -2
     S_DeviceInfo dev_info2{ pcpp::IPAddress("192.162.55.2"),"xx:yy:zz:22:44:11"};
     C_ArpManager dut_arpmanager2(dev_info2);
 
-    EXPECT_EQ (dev_info2, dut_arpmanager2.get_host_ip_mac());
+    EXPECT_EQ (dev_info2, dut_arpmanager2.get_netif_ip_mac());
 
 
 
@@ -169,8 +169,8 @@ void arp_resp_testpacket_generation(pcpp::Packet& arp_resp){
 }
 
 
+ pcpp::Packet incoming_arp_resp{};
 TEST_F (TEST_ArpManager, parse_arp_resp) {
-    pcpp::Packet incoming_arp_resp{};
 
 
     //Arp Packet generation

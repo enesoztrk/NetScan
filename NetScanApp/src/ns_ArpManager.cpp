@@ -2,9 +2,9 @@
 
 
 
-const ns::S_DeviceInfo& ns::C_ArpManager::get_host_ip_mac()const{
+const ns::S_DeviceInfo& ns::C_ArpManager::get_netif_ip_mac()const{
 
-return host_ip_mac;
+return netif_ip_mac;
 }
 
 

@@ -14,7 +14,7 @@ namespace ns {
 
 class C_ArpManager{
 private:
-     const S_DeviceInfo host_ip_mac;
+     const S_DeviceInfo netif_ip_mac;
      pcpp::RawPacket raw_packet;
 
 public:
@@ -32,7 +32,7 @@ public:
       * @note
       * @warning Warning.
       */
-    C_ArpManager(const S_DeviceInfo& host_dev_info):host_ip_mac{host_dev_info}{ }
+    C_ArpManager(const S_DeviceInfo& netif_info):netif_ip_mac{netif_info}{ }
 
     /**
       * @brief
@@ -43,7 +43,7 @@ public:
       * @note
       * @warning Warning.
       */
-     const S_DeviceInfo& get_host_ip_mac()const;
+     const S_DeviceInfo& get_netif_ip_mac()const;
 
      /**
        * @brief
@@ -69,7 +69,7 @@ public:
            raw_packet.clear();
 
            // create a new Ethernet layer
-         const pcpp::MacAddress source_mac{host_ip_mac.mac_addr};
+         const pcpp::MacAddress source_mac{get_netif_ip_mac().mac_addr};
          const pcpp::MacAddress dest_mac_eth_broadcast{"ff:ff:ff:ff:ff:ff"};
 
          pcpp::EthLayer newEthernetLayer( source_mac,dest_mac_eth_broadcast,PCPP_ETHERTYPE_ARP);
@@ -80,7 +80,7 @@ public:
          pcpp::ArpLayer newArpLayer( pcpp::ARP_REQUEST,
                                      source_mac,
                                      dest_mac_arp,
-                                     host_ip_mac.ip.getIPv4(),
+                                     get_netif_ip_mac().ip.getIPv4(),
                                      scanipAddr);
 
 
