@@ -27,7 +27,7 @@ pkg_search_module(PCAP REQUIRED PcapPlusPlus)
 include_directories(${PCAP_INCLUDE_DIRS})
 link_directories(${PCAP_LIBRARY_DIRS})
 link_libraries(${PCAP_LIBRARIES})
-
+add_definitions("-DMOCK_SUPPORT")
 message(STATUS "PCAP_LIBRARIES: ${PCAP_LIBRARIES} in ${PCAP_LIBRARY_DIRS}")
 add_subdirectory(NetScanApp/)
 add_subdirectory(NetScanApp-UnitTest/)
