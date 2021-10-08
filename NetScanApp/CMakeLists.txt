@@ -18,6 +18,7 @@ set(Headers__Packet
     "inc/ns_ArpManager.h"
      "inc/ns_Common.h"
      "inc/ns_DnsManager.h"
+     "inc/ns_NetScan.h"
 )
 
 set(Headers

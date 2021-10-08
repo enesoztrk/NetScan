@@ -76,7 +76,7 @@ TEST_F (TEST_ArpManager, generate_arp_req) {
 
         //return false
         EXPECT_CALL(*Packet_mock_obj,addLayer(Matcher<pcpp::EthLayer*>(testing::_))).Times(1).WillOnce(Return(false));
-        EXPECT_CALL(*Packet_mock_obj,removeFirstLayer()).Times(1).WillOnce(Return(false));
+        //EXPECT_CALL(*Packet_mock_obj,removeFirstLayer()).Times(1).WillOnce(Return(false));
         EXPECT_CALL(*Packet_mock_obj,computeCalculateFields()).Times(1);
 
         auto& dut_rawpacket=dut_arpmanager.generate_arp_req<Mock_Packet>(pcpp::IPv4Address("192.168.10.4"));
@@ -98,7 +98,7 @@ TEST_F (TEST_ArpManager, generate_arp_req) {
         EXPECT_CALL(*Packet_mock_obj,addLayer(Matcher<pcpp::ArpLayer*>(testing::_))).Times(1).WillOnce(Return(false));
         EXPECT_CALL(*Packet_mock_obj,computeCalculateFields()).Times(1);
 
-        EXPECT_CALL(*Packet_mock_obj,removeFirstLayer()).Times(1).WillOnce(Return(false));
+       // EXPECT_CALL(*Packet_mock_obj,removeFirstLayer()).Times(1).WillOnce(Return(false));
 
         auto& dut_rawpacket2=dut_arpmanager2.generate_arp_req<Mock_Packet>(pcpp::IPv4Address("192.168.10.4"));
         EXPECT_NE (test.getRawDataLen(), dut_rawpacket2.getRawDataLen());
@@ -190,6 +190,7 @@ TEST_F (TEST_ArpManager, parse_arp_resp) {
    S_DeviceInfo ret_val=dut_arpmanager.parse_arp_resp(incoming_arp_resp);
     std::cout<<ret_val<<"\n";
     EXPECT_EQ(test_dev, ret_val);
+
 
 
 }
