@@ -15,6 +15,7 @@ namespace ns {
 class C_ArpManager{
 private:
      const S_DeviceInfo netif_ip_mac;
+     S_DeviceInfo& gateway_ip_mac;
      pcpp::RawPacket raw_packet;
 
 public:
@@ -32,7 +33,7 @@ public:
       * @note
       * @warning Warning.
       */
-    C_ArpManager(const S_DeviceInfo& netif_info):netif_ip_mac{netif_info}{ }
+    C_ArpManager(const S_DeviceInfo& netif_info,S_DeviceInfo& gateway_ip_mac_param):netif_ip_mac{netif_info},gateway_ip_mac{gateway_ip_mac_param}{ }
 
     /**
       * @brief
@@ -97,7 +98,7 @@ public:
          {
                    b_ret_val=false;
 
-                packetptr->removeFirstLayer();
+               // packetptr->removeFirstLayer(packetptr->get);
          }
 
 
@@ -125,7 +126,21 @@ public:
       S_DeviceInfo parse_arp_resp(const pcpp::Packet& incoming_packet);
 
 
+      /**
+        * @brief
+        *
+        *
+        * @param none
+        * @return
+        * @note
+        * @warning Warning.
+        */
+      bool set_gateway_mac(const std::string& gateway_mac){
 
+          gateway_ip_mac.mac_addr=gateway_mac;
+          return true;
+
+      }
 
 };//C_ArpManager
 

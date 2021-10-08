@@ -52,9 +52,9 @@ class Mock_Packet : public pcpp::Packet {
 
 
 
-Mock_Packet* Packet_mock_obj{nullptr};
+inline Mock_Packet* Packet_mock_obj{nullptr};
 
-Mock_Packet* Mock_Packet::get()
+inline Mock_Packet* Mock_Packet::get()
 {
       return Packet_mock_obj;
    }
