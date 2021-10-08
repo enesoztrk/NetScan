@@ -17,7 +17,7 @@ public:
        // code here will execute just before the test ensues
 
         ns::Packet_mock_obj= new ns::Mock_Packet;
-        std::cout<<"SetUp=================>\n";
+        std::cout<<"SetUp\n";
    }
 
    void TearDown( ) {
@@ -25,7 +25,7 @@ public:
        // ok to through exceptions from here if need be
 
         delete ns::Packet_mock_obj;
-       std::cout<<"TearDown<=================\n";
+       std::cout<<"TearDown\n";
 
 
 
@@ -37,19 +37,19 @@ using namespace ns;
 
 TEST_F (TEST_ArpManager, get_host_ip_mac) {
 
-
+ S_DeviceInfo gateway_mac_ip{ pcpp::IPAddress("192.168.1.1"),std::string("")};
     //Scenario -1
     S_DeviceInfo dev_info{ pcpp::IPAddress("192.168.50.2"),"aa:bb:cc:dd:ee:ff"};
-    C_ArpManager dut_arpmanager(dev_info);
-
-    EXPECT_EQ (dev_info, dut_arpmanager.get_host_ip_mac());
+    C_ArpManager dut_arpmanager(dev_info,gateway_mac_ip);
+    dut_arpmanager.set_gateway_mac("cc:cc:cc:cc:cc:cc");
+    EXPECT_EQ (dev_info, dut_arpmanager.get_netif_ip_mac());
 
 
     //Scenario -2
     S_DeviceInfo dev_info2{ pcpp::IPAddress("192.162.55.2"),"xx:yy:zz:22:44:11"};
-    C_ArpManager dut_arpmanager2(dev_info2);
+    C_ArpManager dut_arpmanager2(dev_info2,gateway_mac_ip);
 
-    EXPECT_EQ (dev_info2, dut_arpmanager2.get_host_ip_mac());
+    EXPECT_EQ (dev_info2, dut_arpmanager2.get_netif_ip_mac());
 
 
 
@@ -70,8 +70,9 @@ TEST_F (TEST_ArpManager, generate_arp_req) {
 
 
         //Scenario -1 - Return empty dut_rawpacket
-        C_ArpManager dut_arpmanager({ pcpp::IPAddress("192.168.50.2"),"aa:bb:cc:dd:ee:ff"});
 
+        S_DeviceInfo gateway_mac_ip{ pcpp::IPAddress("192.168.1.1"),std::string("")};
+        C_ArpManager dut_arpmanager({ pcpp::IPAddress("192.168.50.2"),"aa:bb:cc:dd:ee:ff"},gateway_mac_ip);
 
         //return false
         EXPECT_CALL(*Packet_mock_obj,addLayer(Matcher<pcpp::EthLayer*>(testing::_))).Times(1).WillOnce(Return(false));
@@ -86,7 +87,8 @@ TEST_F (TEST_ArpManager, generate_arp_req) {
 
 
          //Scenario -2 - Return empty dut_rawpacket
-        C_ArpManager dut_arpmanager2({ pcpp::IPAddress("192.168.50.2"),"aa:bb:cc:dd:ee:ff"});
+        S_DeviceInfo gateway_mac_ip2{ pcpp::IPAddress("192.168.1.1"),std::string("")};
+        C_ArpManager dut_arpmanager2({ pcpp::IPAddress("192.168.50.2"),"aa:bb:cc:dd:ee:ff"},gateway_mac_ip2);
 
 
 
@@ -104,7 +106,9 @@ TEST_F (TEST_ArpManager, generate_arp_req) {
 
 
         //Scenario -3 - Return rawpaket which has 2 elements
-        C_ArpManager dut_arpmanager3({ pcpp::IPAddress("192.168.50.2"),"aa:bb:cc:dd:ee:ff"});
+
+        S_DeviceInfo gateway_mac_ip3{ pcpp::IPAddress("192.168.1.1"),std::string("")};
+        C_ArpManager dut_arpmanager3({ pcpp::IPAddress("192.168.50.2"),"aa:bb:cc:dd:ee:ff"},gateway_mac_ip3);
 
 
 
@@ -168,13 +172,15 @@ void arp_resp_testpacket_generation(pcpp::Packet& arp_resp){
 
 }
 
-
+#include<random>
+#include <algorithm>
+ pcpp::Packet incoming_arp_resp{};
 TEST_F (TEST_ArpManager, parse_arp_resp) {
-    pcpp::Packet incoming_arp_resp{};
 
 
     //Arp Packet generation
-    C_ArpManager dut_arpmanager({ pcpp::IPAddress("192.168.50.2"),"dd:dd:dd:dd:dd:dd"});
+    S_DeviceInfo gateway_mac_ip{ pcpp::IPAddress("192.168.1.1"),std::string("")};
+    C_ArpManager dut_arpmanager({ pcpp::IPAddress("192.168.50.2"),"dd:dd:dd:dd:dd:dd"},gateway_mac_ip);
 
     arp_resp_testpacket_generation(incoming_arp_resp);
 
@@ -186,9 +192,8 @@ TEST_F (TEST_ArpManager, parse_arp_resp) {
     EXPECT_EQ(test_dev, ret_val);
 
 
-
-
 }
+
 
 
 

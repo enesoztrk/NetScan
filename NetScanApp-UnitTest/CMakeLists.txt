@@ -17,7 +17,7 @@ message(STATUS "GTEST_LIBRARIES: ${GTEST_LIBRARIES} in ${GTEST_LIBRARY_DIRS}")
 message(STATUS "GMOCK_LIBRARIES: ${GMOCK_LIBRARIES} in ${GMOCK_LIBRARIES}")
 
 
-add_executable(${PROJECT_NAME} src/main.cpp inc/MockDnsManager.h inc/MockArpManager.h src/TEST_ArpManager.cpp inc/MockPacket.h)
+add_executable(${PROJECT_NAME} src/main.cpp inc/MockDnsManager.h inc/MockArpManager.h src/TEST_ArpManager.cpp  src/TEST_DnsManager.cpp inc/MockPacket.h)
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../NetScanApp/inc")
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

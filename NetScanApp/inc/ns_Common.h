@@ -4,7 +4,10 @@
 #include<unordered_map>
 #include "PcapLiveDeviceList.h"
 #include<iostream>
+
 namespace ns {
+
+
 using hostname_t=std::string;
 
 struct S_DeviceInfo {
@@ -53,8 +56,11 @@ struct S_DeviceInfo {
 
     // `operator==` is required to compare keys in case of a hash collision
        bool operator==(const S_DeviceInfo &p) const {
+
            return  mac_addr == p.mac_addr;
        }
+
+
 
 
        friend std::ostream& operator<<(std::ostream& os,const S_DeviceInfo& dev_info);
@@ -76,6 +82,7 @@ public:
          return h2;
     }
 };
+
 using dev_info_t=std::unordered_map<S_DeviceInfo,hostname_t,hash_func>;
 
 
