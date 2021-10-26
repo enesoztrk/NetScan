@@ -19,12 +19,18 @@ set(Headers__Packet
      "inc/ns_Common.h"
      "inc/ns_DnsManager.h"
      "inc/ns_NetScan.h"
-)
 
+)
+set(Headers__StateMachine
+    "inc/ns_SM_common.h"
+
+)
 set(Headers
     "inc/main.h"
 )
 source_group("NetScanApp/inc/Packet" FILES ${Headers__Packet})
+source_group("NetScanApp/inc/State-Machine" FILES ${Headers__StateMachine})
+
 source_group("NetScanApp/inc" FILES ${Headers})
 
 ########All Files#############
@@ -34,6 +40,7 @@ set(ALL_FILES
      ${Sources__Packet}
      ${Headers}
      ${Headers__Packet}
+      ${Headers__StateMachine}
 
  )
 
