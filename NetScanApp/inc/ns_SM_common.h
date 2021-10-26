@@ -7,8 +7,11 @@
 
 namespace NetScan_SM {
     using namespace tinyfsm;
-    uint32_t get_ticks_passed_until_now(void);
+
+//callback function type
     using cb_t = bool(*)(int, void*);
+
+//States
     enum class States {
         ARP_MSG_SEND = 0,
         DNS_MSG_SEND,
