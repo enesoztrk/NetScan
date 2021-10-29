@@ -245,30 +245,16 @@ void MsgStateMachine<inum>::react(Timer_check const &tick) {
      return;
 }
 
-
-
-
-/**
- * @brief
- *
- *
- * @param none
- * @return
- * @note
- * @warning Warning.
- */
 template<int inum>
- bool invoke_ArpMsgsend_state(void* data_param) {
-    if (MsgStateMachine<inum>::get_state().first == States::INACTIVE) {
+bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(void* data_param){
 
-        //pass data to be sent to network
-        MsgStateMachine<inum>::buffer_data = data_param;
-        MsgStateMachine<inum>::dispatch(Arp_MsgSend(inum));
-    }
-
-
-    return true;
+   buffer_data=data_param;
+   MsgStateMachine<inum>::dispatch(Arp_MsgRecv(inum));
+   return true;
 }
+
+
+
 
 
  //template decleration

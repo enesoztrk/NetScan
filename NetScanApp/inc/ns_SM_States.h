@@ -235,12 +235,12 @@ public:
   void entry() override {
     std::cout << "Communication Timeout: "<< MsgStateMachine<inum>::get_tick()<<"\n";
    auto ret_val= MsgStateMachine<inum>::get_tick();
-
+    base::set_state(States::COMM_TIMEOUT);
    if(nullptr==base::cb_state_process[index])
        throw SM_exception{"CommTimeout State Callback func is null"};
 
    base::cb_state_process[index](inum,base::buffer_data);
-   base::set_state(States::COMM_TIMEOUT);
+
 
 
   };

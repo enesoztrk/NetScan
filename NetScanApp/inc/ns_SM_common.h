@@ -4,10 +4,12 @@
 #include <iostream>
 #include <stdlib.h> /* rand */
 #include <map>
+#include "ns_SM_utils.h"
+
 
 namespace NetScan_SM {
     using namespace tinyfsm;
-
+    using namespace NetScan_SM_Utils;
 //callback function type
     using cb_t = bool(*)(int, void*);
 

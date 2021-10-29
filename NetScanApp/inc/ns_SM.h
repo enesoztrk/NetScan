@@ -62,7 +62,7 @@ static void reset();
 void react(tinyfsm::Event const &);
 
 /*Function to invoke SM  arp response receiving states*/
-bool invoke_ArpMsgRecv_state(void* data_param);
+static bool invoke_ArpMsgRecv_state(void* data_param);
 
 /*Function to invoke SM  for sending arp request to network*/
 friend  bool invoke_ArpMsgsend_state(void* data_param);
@@ -120,7 +120,31 @@ static std::pair<States, std::string>& get_state(void);
 
 };
 
+/**
+ * @brief
+ *
+ *
+ * @param none
+ * @return
+ * @note
+ * @warning Warning.
+ */
+template<int inum>
+bool invoke_ArpMsgsend_state(void* data_param) {
 
+  auto& state=MsgStateMachine<inum>::get_state().first;
+
+    if (States::INACTIVE==state ||
+        States::COMM_TIMEOUT==state ) {
+
+        //pass data to be sent to network
+        MsgStateMachine<inum>::buffer_data = data_param;
+        MsgStateMachine<inum>::dispatch(Arp_MsgSend(inum));
+    }
+
+
+    return true;
+}
 // ----------------------------------------------------------------------------
 // 4. State Machine List Declaration
 //
