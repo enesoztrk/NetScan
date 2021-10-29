@@ -30,6 +30,8 @@ set(Headers__Packet
 set(Headers__StateMachine
     "inc/ns_SM_common.h"
     "inc/ns_SM.h"
+     "inc/ns_SM_States.h"
+     "inc/ns_SM_utils.h"
 )
 set(Headers
     "inc/main.h"

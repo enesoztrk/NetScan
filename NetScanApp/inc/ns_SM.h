@@ -2,9 +2,20 @@
 #define NS_SM_H
 #include "ns_SM_common.h"
 #include<functional>
-
+#include<exception>
 
 namespace NetScan_SM {
+
+extern std::map<States, std::string> States_table;
+
+class SM_exception : public std::logic_error {
+public:
+
+ SM_exception(const std::string& ex ): std::logic_error(ex){}
+
+};
+
+
 // ----------------------------------------------------------------------------
 // 1. Event Declarations
 //
@@ -46,6 +57,7 @@ public:
 static void reset();
 
 
+
 /* default reaction for unhandled events */
 void react(tinyfsm::Event const &);
 
@@ -72,13 +84,14 @@ void         exit(void)  { };  /* no exit actions */
 /*Register callbacks to call inside the states*/
 static void register_callback(const cb_t &cb,States cb_state);
 
-//will be private - get/set functions will be added
+
+//TODO: will be private - get/set functions will be added
 static inline void* buffer_data{ nullptr };
 
 private:
 static inline unsigned int tick_passed{};
 static inline std::pair<States, std::string> prev_state{ States::INACTIVE,States_table[States::INACTIVE] };
-static inline std::pair<States, std::string> curr_state{ States::INACTIVE,States_table[States::INACTIVE] };
+static inline std::pair<States, std::string> curr_state{States::INACTIVE,States_table[States::INACTIVE]  };
 static constexpr unsigned char NUM_CB_FUNC=
       static_cast<const unsigned char>(States::COMM_TIMEOUT)+1;
 static inline bool timer_enable_flag{false};
@@ -90,6 +103,8 @@ static constexpr inline auto timeout_val=500;
 static inline std::function<bool(const int,void*)> cb_state_process[NUM_CB_FUNC]{nullptr};
 
 void increase_tick(unsigned int tick_param);
+unsigned int  get_tick(void);
+
 
 bool set_state(const States& new_state);
 
@@ -106,7 +121,21 @@ static std::pair<States, std::string>& get_state(void);
 };
 
 
+// ----------------------------------------------------------------------------
+// 4. State Machine List Declaration
+//
+using fsm_handle = NetScan_SM::ST_NetScan_SM_List<
+  NetScan_SM::MsgStateMachine<0>,
+  NetScan_SM::MsgStateMachine<1>,
+  NetScan_SM::MsgStateMachine<2>
+  >;
+
 }//namespace
+
+
+
+
+
 
 
 #endif // NS_SM_H

@@ -21,18 +21,6 @@ namespace NetScan_SM {
         COMM_TIMEOUT
     };
 
-    //State lookup table
-    std::map<States, std::string> States_table{
-
-    {States::ARP_MSG_SEND,"ARP-MSG-SENT"},
-    {States::DNS_MSG_SEND,"DNS-MSG-SENT"},
-    {States::ARP_MSG_PARSE,"ARP-MSG-PARSE"},
-    {States::DNS_MSG_PARSE,"DNS-MSG-PARSE"},
-    {States::INACTIVE,"INACTIVE"},
-    {States::COMM_TIMEOUT,"COMM-TIMEOUT"},
-
-
-    };
 
     template<typename... FF>
     struct ST_NetScan_SM_List;
