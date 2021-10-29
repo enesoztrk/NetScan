@@ -19,7 +19,7 @@ private:
      pcpp::RawPacket raw_packet;
 
 public:
-    C_ArpManager()=delete;
+     C_ArpManager()=delete;
     C_ArpManager(const C_ArpManager&)=delete;
     C_ArpManager& operator=(const C_ArpManager&)=delete;
     C_ArpManager(C_ArpManager&&)=delete ;
