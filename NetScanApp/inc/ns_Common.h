@@ -7,6 +7,13 @@
 
 namespace ns {
 
+struct common_data_t{
+
+    pcpp::IPAddress scan_ip;
+    std::string mac_addr;
+    pcpp::Packet   in_packet;
+    void* this_ptr;
+};
 
 using hostname_t=std::string;
 

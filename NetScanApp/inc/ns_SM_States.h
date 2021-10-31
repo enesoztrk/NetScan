@@ -37,7 +37,7 @@ public:
         throw SM_exception{"Inactive State Callback func is null"};
 
     //callback function for application
-    base::cb_state_process[index](inum,base::buffer_data);
+    base::cb_state_process[index](inum,&base::buffer_data);
 
   };
 };
@@ -74,7 +74,7 @@ public:
     base::set_state(States::ARP_MSG_SEND);
 
     //send packet
-   auto ret_val= base::cb_state_process[index](inum,base::buffer_data);
+   auto ret_val= base::cb_state_process[index](inum,&base::buffer_data);
     if(!ret_val)
     {
         //error generation
@@ -118,7 +118,7 @@ public:
 
       base::set_state(States::ARP_MSG_PARSE);
 
-      auto ret_val=base::cb_state_process[index](inum,base::buffer_data);
+      auto ret_val=base::cb_state_process[index](inum,&base::buffer_data);
 
       //stop timer. Packet received
       base::set_timer(false);
@@ -168,7 +168,7 @@ public:
 
 
     //send packet
-    auto ret_val = base::cb_state_process[index](inum, base::buffer_data);
+    auto ret_val = base::cb_state_process[index](inum, &base::buffer_data);
     if (!ret_val)
     {
         //error generation
@@ -207,7 +207,7 @@ public:
     //stop timer. Packet received
     base::set_timer(false);
 
-    base::cb_state_process[index](inum,base::buffer_data);
+    base::cb_state_process[index](inum,&base::buffer_data);
     base::set_state(States::DNS_MSG_PARSE);
     base::template transit < Inactive<inum>>();
   };
@@ -239,7 +239,7 @@ public:
    if(nullptr==base::cb_state_process[index])
        throw SM_exception{"CommTimeout State Callback func is null"};
 
-   base::cb_state_process[index](inum,base::buffer_data);
+   base::cb_state_process[index](inum,&base::buffer_data);
 
 
 

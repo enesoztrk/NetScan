@@ -15,7 +15,7 @@ return netif_ip_mac;
 
  ns::S_DeviceInfo ns::C_ArpManager::parse_arp_resp(const pcpp::Packet& incoming_packet){
 
-    auto arp_packet=incoming_packet.getLayerOfType<pcpp::ArpLayer>();
+    pcpp::ArpLayer* arp_packet=incoming_packet.getLayerOfType<pcpp::ArpLayer>();
 
      if(pcpp::ARP_REPLY==(arp_packet->getArpHeader()->opcode)>>8){
 

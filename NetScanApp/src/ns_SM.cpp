@@ -246,10 +246,20 @@ void MsgStateMachine<inum>::react(Timer_check const &tick) {
 }
 
 template<int inum>
-bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(void* data_param){
+bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(ns::common_data_t* data_param){
 
-   buffer_data=data_param;
-   MsgStateMachine<inum>::dispatch(Arp_MsgRecv(inum));
+    bool ret_val=false;
+    if(buffer_data.scan_ip==data_param->scan_ip)
+    {
+        ret_val=true;
+        buffer_data.in_packet=data_param->in_packet;
+        MsgStateMachine<inum>::dispatch(Arp_MsgRecv(inum));
+
+
+    }
+
+    data_param->in_packet={};
+
    return true;
 }
 

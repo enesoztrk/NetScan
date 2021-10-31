@@ -65,7 +65,7 @@ public:
 
          //create IPV4 layer
 
-             pcpp::IPv4Layer newIPLayer(netif_ip_mac.ip.getIPv4(), scan_dev_info.ip.getIPv4());
+             pcpp::IPv4Layer newIPLayer(netif_ip_mac.ip.getIPv4(), gateway_ip_mac.ip.getIPv4());
              newIPLayer.getIPv4Header()->ipId = pcpp::hostToNet16(2000);
              newIPLayer.getIPv4Header()->ipVersion=4;
              newIPLayer.getIPv4Header()->internetHeaderLength=5;

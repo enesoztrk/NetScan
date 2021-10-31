@@ -1,7 +1,7 @@
 #include<iostream>
 #include"ns_ArpManager.h"
 #include "ns_SM.h"
-
+#include "ns_NetScan.h"
 
 
 /*
@@ -43,11 +43,11 @@ return true;
 }
 int main(){
 
-    NetScan_SM::fsm_handle::register_callback(inactive_test, NetScan_SM::States::INACTIVE);
-    NetScan_SM::fsm_handle::register_callback(arpsend_test, NetScan_SM::States::ARP_MSG_SEND);
-    NetScan_SM::fsm_handle::register_callback(arp_parse_test, NetScan_SM::States::ARP_MSG_PARSE);
-    NetScan_SM::fsm_handle::register_callback(dns_req_test, NetScan_SM::States::DNS_MSG_SEND);
-    NetScan_SM::fsm_handle::register_callback(dns_parse_test, NetScan_SM::States::DNS_MSG_PARSE);
+
+    ns::C_NtwrkScan a{pcpp::IPv4Address("192.168.50.104")};
+
+    a.set_ip_range("192.168.50.102","192.168.50.253");
+    a.start();
 
     //NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(1));
 
@@ -57,31 +57,33 @@ int main(){
    {
 
 
-     std::cout << std::endl << "0,1,2=Toggle single, a=Toggle all, r=Restart, q=Quit ? ";
-    // std::cin >> c;
+        a.run();
 
-     switch(c) {
-     case 'r':
-     {
-           NetScan_SM::invoke_ArpMsgsend_state<0>(&buff_out);
-        // NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(NetScan_SM::get_ticks_passed_until_now()));
-            c='t';
-     }
-         break;
+//     std::cout << std::endl << "0,1,2=Toggle single, a=Toggle all, r=Restart, q=Quit ? ";
+//    // std::cin >> c;
 
-     case 't':
-     {
-            NetScan_SM::MsgStateMachine<0>::invoke_ArpMsgRecv_state(&buff_out);
-        // NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(NetScan_SM::get_ticks_passed_until_now()));
+//     switch(c) {
+//     case 'r':
+//     {
+//           NetScan_SM::invoke_ArpMsgsend_state<0>(&buff_out);
+//        // NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(NetScan_SM::get_ticks_passed_until_now()));
+//            c='t';
+//     }
+//         break;
 
-     }
-         break;
+//     case 't':
+//     {
+//            NetScan_SM::MsgStateMachine<0>::invoke_ArpMsgRecv_state(&buff_out);
+//        // NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(NetScan_SM::get_ticks_passed_until_now()));
 
-     case 'q':
-       return 0;
-     default:
-       std::cout << "> Invalid input" << std::endl;
-     };
+//     }
+//         break;
+
+//     case 'q':
+//       return 0;
+//     default:
+//       std::cout << "> Invalid input" << std::endl;
+//     };
    }
     return 0;
 }

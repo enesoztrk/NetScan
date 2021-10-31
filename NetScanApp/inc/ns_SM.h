@@ -3,7 +3,7 @@
 #include "ns_SM_common.h"
 #include<functional>
 #include<exception>
-
+#include "ns_Common.h"
 namespace NetScan_SM {
 
 extern std::map<States, std::string> States_table;
@@ -62,10 +62,10 @@ static void reset();
 void react(tinyfsm::Event const &);
 
 /*Function to invoke SM  arp response receiving states*/
-static bool invoke_ArpMsgRecv_state(void* data_param);
+static bool invoke_ArpMsgRecv_state(ns::common_data_t* data_param);
 
 /*Function to invoke SM  for sending arp request to network*/
-friend  bool invoke_ArpMsgsend_state(void* data_param);
+friend  bool invoke_ArpMsgsend_state(ns::common_data_t* data_param);
 
 /*Receiving Arp Response event */
 void react(Arp_MsgRecv const &);
@@ -86,7 +86,7 @@ static void register_callback(const cb_t &cb,States cb_state);
 
 
 //TODO: will be private - get/set functions will be added
-static inline void* buffer_data{ nullptr };
+static inline ns::common_data_t buffer_data{};
 
 private:
 static inline unsigned int tick_passed{};
@@ -130,20 +130,21 @@ static std::pair<States, std::string>& get_state(void);
  * @warning Warning.
  */
 template<int inum>
-bool invoke_ArpMsgsend_state(void* data_param) {
+bool invoke_ArpMsgsend_state(ns::common_data_t* data_param) {
 
   auto& state=MsgStateMachine<inum>::get_state().first;
-
+  bool ret_val=false;
     if (States::INACTIVE==state ||
         States::COMM_TIMEOUT==state ) {
 
         //pass data to be sent to network
-        MsgStateMachine<inum>::buffer_data = data_param;
+        MsgStateMachine<inum>::buffer_data = *data_param;
         MsgStateMachine<inum>::dispatch(Arp_MsgSend(inum));
+        ret_val=true;
     }
 
 
-    return true;
+    return ret_val;
 }
 // ----------------------------------------------------------------------------
 // 4. State Machine List Declaration
