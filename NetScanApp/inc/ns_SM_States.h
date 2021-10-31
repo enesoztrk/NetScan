@@ -32,7 +32,8 @@ public:
 
     base::set_state(States::INACTIVE);
 
-
+    //stop timer. Packet received
+    base::set_timer(false);
     if(nullptr==base::cb_state_process[index])
         throw SM_exception{"Inactive State Callback func is null"};
 
@@ -64,6 +65,7 @@ public:
   void entry() override {
     std::cout << "Arp Send\n" << std::endl;
 
+    base::set_state(States::ARP_MSG_SEND);
 
     if(nullptr==base::cb_state_process[index])
          throw SM_exception{"ArpMsgSend State Callback func is null"};
@@ -71,7 +73,9 @@ public:
     //reset timer
     base::reset();
 
-    base::set_state(States::ARP_MSG_SEND);
+    //TODO: will be deleted. reset function should call set_timer
+    base::set_timer(true);
+
 
     //send packet
    auto ret_val= base::cb_state_process[index](inum,&base::buffer_data);

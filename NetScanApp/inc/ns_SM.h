@@ -29,7 +29,11 @@ struct Arp_MsgRecv : tinyfsm::Event {
     Arp_MsgRecv(int i) :param{ i } {}
     int param;
 };
-struct Dns_MsgRecv : tinyfsm::Event { };
+struct Dns_MsgRecv : tinyfsm::Event {
+    Dns_MsgRecv(int i) :param{ i } {}
+    int param;
+
+};
 struct Timer_check : tinyfsm::Event {
 
     Timer_check(unsigned int tick_param) :tick{ tick_param } {}
@@ -62,7 +66,10 @@ static void reset();
 void react(tinyfsm::Event const &);
 
 /*Function to invoke SM  arp response receiving states*/
-static bool invoke_ArpMsgRecv_state(ns::common_data_t* data_param);
+static bool invoke_ArpMsgRecv_state(ns::common_data_t data_param);
+
+/*Function to invoke SM  dns response receiving states*/
+static bool invoke_DnsMsgRecv_state(ns::common_data_t* data_param);
 
 /*Function to invoke SM  for sending arp request to network*/
 friend  bool invoke_ArpMsgsend_state(ns::common_data_t* data_param);
@@ -98,7 +105,7 @@ static inline bool timer_enable_flag{false};
 
 
 protected:
-static constexpr inline auto timeout_val=500;
+static constexpr inline auto timeout_val=2000;
 
 static inline std::function<bool(const int,void*)> cb_state_process[NUM_CB_FUNC]{nullptr};
 

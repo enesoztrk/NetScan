@@ -246,14 +246,34 @@ void MsgStateMachine<inum>::react(Timer_check const &tick) {
 }
 
 template<int inum>
-bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(ns::common_data_t* data_param){
+bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(ns::common_data_t data_param){
 
     bool ret_val=false;
-    if(buffer_data.scan_ip==data_param->scan_ip)
+    if(buffer_data.scan_ip==data_param.scan_ip && get_state().first==States::ARP_MSG_SEND)
+    {
+        ret_val=true;
+        buffer_data.in_packet=data_param.in_packet;
+        MsgStateMachine<inum>::dispatch(Arp_MsgRecv(inum));
+
+
+    }
+
+
+    //data_param.in_packet={};
+
+   return true;
+}
+
+
+template<int inum>
+bool  MsgStateMachine<inum>::invoke_DnsMsgRecv_state(ns::common_data_t* data_param){
+
+    bool ret_val=false;
+    if(buffer_data.scan_ip==data_param->scan_ip&& get_state().first==States::DNS_MSG_SEND)
     {
         ret_val=true;
         buffer_data.in_packet=data_param->in_packet;
-        MsgStateMachine<inum>::dispatch(Arp_MsgRecv(inum));
+        MsgStateMachine<inum>::dispatch(Dns_MsgRecv(inum));
 
 
     }
@@ -262,9 +282,6 @@ bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(ns::common_data_t* data_par
 
    return true;
 }
-
-
-
 
 
  //template decleration

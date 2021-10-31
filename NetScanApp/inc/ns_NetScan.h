@@ -79,12 +79,14 @@ public:
         // set a BPF filter for the reader - only packets that match the filter will be read
          pcpp::ProtoFilter protocolArpFilter(pcpp::ARP);
         pcpp::PortFilter protocolDNSPortFilter(53,pcpp::SRC);
+         pcpp::PortFilter protocolmDNSPortFilter(5353,pcpp::SRC);
+
 
         // create an OR filter to combine both filters - capture only ARP or DNS packets
         pcpp::OrFilter  OrFilter;
         OrFilter.addFilter(&protocolArpFilter);
         OrFilter.addFilter(&protocolDNSPortFilter);
-
+        OrFilter.addFilter(&protocolmDNSPortFilter);
 
             if (!dev->setFilter(OrFilter))
             {
@@ -102,6 +104,7 @@ public:
               NetScan_SM::fsm_handle::register_callback(SM_Arpmsg_parse_state_cb, NetScan_SM::States::ARP_MSG_PARSE);
               NetScan_SM::fsm_handle::register_callback(SM_Dnsmsg_send_state_cb, NetScan_SM::States::DNS_MSG_SEND);
               NetScan_SM::fsm_handle::register_callback(SM_Dnsmsg_parse_state_cb, NetScan_SM::States::DNS_MSG_PARSE);
+               NetScan_SM::fsm_handle::register_callback(SM_CommTimeout_state_cb, NetScan_SM::States::COMM_TIMEOUT);
 
 
 
@@ -181,7 +184,7 @@ public:
             ret_val=false;
 
 
-        scan_ip_vec.push_back(dev->getDefaultGateway());
+         //scan_ip_vec.push_back(dev->getDefaultGateway());
 
         for(auto i=low_bound_ip_addr.toBytes()[3];(ret_val==true && i<=high_bound_ip_addr.toBytes()[3]);++i){
 
@@ -199,7 +202,7 @@ public:
 
 
         
-        if(!scan_ip_vec.empty()){
+        if(!scan_ip_vec.empty() ){
 
                    common_data.scan_ip=*scan_ip_vec.begin();
 
@@ -210,6 +213,18 @@ public:
 
 
         }
+        else{
+            std::cout<<"===Device list===\n";
+            for(auto& iter:dev_table ){
+
+                std::cout<<"IPaddr: "<<iter.first.ip.toString()<<" Mac addr: "<<iter.first.mac_addr<<"\n";
+
+
+            }
+            exit(1);
+        }
+
+
         if(packetVec.size()!=0){
 
 
@@ -219,16 +234,43 @@ public:
                     pcpp::ArpLayer* arpLayer =
                            common_data.in_packet.getLayerOfType<pcpp::ArpLayer>();
 
-                    common_data.scan_ip=arpLayer->getSenderIpAddr();
-                    if(arpLayer->getSenderIpAddr()!=dev->getIPv4Address() && arpLayer->getSenderIpAddr().isValid())
-                    NetScan_SM::MsgStateMachine<0>::invoke_ArpMsgRecv_state(&common_data);
-                }
+//                    if(!find_ip_in_device_list(arpLayer->getSenderIpAddr())){
 
+//                    }
+
+                    common_data_t temp;
+                    temp.scan_ip=arpLayer->getSenderIpAddr();
+                    temp.in_packet=common_data.in_packet;
+                    if( arpLayer->getSenderIpAddr().isValid())
+                    NetScan_SM::MsgStateMachine<0>::invoke_ArpMsgRecv_state(temp);
+                }
+                else if(common_data.in_packet.isPacketOfType(pcpp::DNS))
+                {
+
+                    pcpp::IPLayer* ipLayer =
+                           common_data.in_packet.getLayerOfType<pcpp::IPLayer>();
+
+
+                    //TODO: mdns feature will be added for autoretive server
+                    //https://datatracker.ietf.org/doc/html/rfc6762#page-5
+                    if(ipLayer->getSrcIPAddress()==gateway_mac_ip.ip && ipLayer->getDstIPAddress()==netif_mac_ip.ip){
+
+                        //common_data.scan_ip=ipLayer->getSrcIPAddress();
+                        NetScan_SM::MsgStateMachine<0>::invoke_DnsMsgRecv_state(&common_data);
+
+                    }
+
+
+
+                }
 
 
                 packetVec.erase(packetVec.begin());
 
         }
+
+
+        NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(NetScan_SM::get_ticks_passed_until_now()));
 
     }
 
@@ -254,7 +296,7 @@ public:
             bool ret_val=false;
         auto is_ip_same = [&ip](auto& i){ return i.first.ip==ip; };
 
-          auto result1 = std::find_if(begin(dev_table), end(dev_table), is_ip_same);
+        decltype (dev_table.begin()) result1 = std::find_if(begin(dev_table), end(dev_table), is_ip_same);
 
           if(result1!=end(dev_table)){
               // result1->second=ret_val2.first;
@@ -266,11 +308,28 @@ public:
 
     }
 
+
+    auto find_ip_in_device_list_return(const pcpp::IPAddress& ip) {
+
+        decltype (dev_table.begin()) ret_val{nullptr};
+        auto is_ip_same = [&ip](auto& i){ return i.first.ip==ip; };
+
+          auto result1 = std::find_if(begin(dev_table), end(dev_table), is_ip_same);
+
+          if(result1!=end(dev_table)){
+              // result1->second=ret_val2.first;
+              std::cout << "found\n";
+             // ret_val=true;
+              ret_val=result1;
+          }
+
+          return ret_val;
+
+    }
+
     bool sendpacket(pcpp::RawPacket& packet){
 
-
-        dev->sendPacket(packet);
-        return true;
+        return  dev->sendPacket(packet);
     }
 
     T& get_arp_instance(){
@@ -309,7 +368,7 @@ private:
 
 
         gateway_mac_ip.ip=dev->getDefaultGateway();
-
+         auto dns=   dev->getDnsServers();
 
         if (c_arp == nullptr)
                 c_arp.reset(new T(netif_mac_ip,gateway_mac_ip));
@@ -340,8 +399,14 @@ private:
 
 
   static  bool SM_Inactive_state_cb(int i,void* ptr){
+        static bool is_init=true;
 
 
+      ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
+       CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->this_ptr);
+      *common_data={};
+       if(this_ptr!=nullptr)
+       this_ptr->common_data.scan_ip={pcpp::IPAddress("")};
     std::cout<<"SM_Inactive_state_cb\n";
     return true;
     }
@@ -361,7 +426,12 @@ private:
    static   bool SM_Arpmsg_parse_state_cb(int i,void* ptr){
        ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
         CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->this_ptr);
-      S_DeviceInfo response=  this_ptr->c_arp->parse_arp_resp(this_ptr->common_data.in_packet);
+      S_DeviceInfo response=  this_ptr->c_arp->parse_arp_resp(common_data->in_packet);
+
+//      if(response==S_DeviceInfo())
+//          return false;
+
+
       common_data->scan_ip=response.ip;
       common_data->mac_addr=response.mac_addr;
         this_ptr->dev_table[response]="";
@@ -371,6 +441,8 @@ private:
       std::cout<<"SM_Arpmsg_parse_state_cb, " << response.ip.toString()<<" ,"<< response.mac_addr<<"\n";
     return true;
     }
+
+
    static   bool SM_Dnsmsg_send_state_cb(int i,void* ptr){
        ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
         CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->this_ptr);
@@ -379,12 +451,29 @@ private:
     std::cout<<"SM_Dnsmsg_send_state_cb\n";
     return true;
     }
+
+
   static    bool SM_Dnsmsg_parse_state_cb(int i,void* ptr){
+      ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
+       CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->this_ptr);
+
+       auto response=this_ptr->c_dns->parse_dns_resp(common_data->in_packet);
+
+       if(response.second!=pcpp::IPAddress(""))
+       auto iter=this_ptr->find_ip_in_device_list_return(response.second);
 
 
-    std::cout<<"SM_Dnsmsg_parse_state_cb\n";
+
+    std::cout<<"SM_Dnsmsg_parse_state_cb " <<response.first<<" ," << response.second.toString()<<"\n";
     return true;
     }
+
+  static    bool SM_CommTimeout_state_cb(int i,void* ptr){
+
+ ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
+ std::cout<<"SM_CommTimeout_state_cb, " << common_data->scan_ip.toString()<<"\n";
+
+  }
 
 };
 
