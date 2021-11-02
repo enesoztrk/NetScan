@@ -9,39 +9,7 @@
 https://www.fluentcpp.com/2019/07/02/fseam-a-mocking-framework-that-requires-no-change-in-code-part-1/
 */
 
-bool inactive_test(int i,void* ptr){
 
-
-std::cout<<"Inactive\n";
-return true;
-}
-
-bool arpsend_test(int i,void* ptr){
-
-
-std::cout<<"arp send\n";
-return true;
-}
-
-bool arp_parse_test(int i,void* ptr){
-
-
-std::cout<<"arp parse\n";
-return true;
-}
-
-bool dns_req_test(int i,void* ptr){
-
-
-std::cout<<"dns_req\n";
-return true;
-}
-bool dns_parse_test(int i,void* ptr){
-
-
-std::cout<<"Inactive\n";
-return true;
-}
 int main(){
 
 
@@ -59,7 +27,7 @@ int main(){
 
 
         a.run();
-        usleep(1000);
+        //usleep(1000);
    }
     return 0;
 }

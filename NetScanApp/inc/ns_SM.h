@@ -105,7 +105,7 @@ static inline bool timer_enable_flag{false};
 
 
 protected:
-static constexpr inline auto timeout_val=2000;
+static constexpr inline auto timeout_val=250;
 
 static inline std::function<bool(const int,void*)> cb_state_process[NUM_CB_FUNC]{nullptr};
 

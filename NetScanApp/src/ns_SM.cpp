@@ -126,6 +126,7 @@ void MsgStateMachine<inum>::set_timer(bool status){
  */
 template<int inum>
 bool MsgStateMachine<inum>::is_timer_on()const{
+
     return timer_enable_flag;
 }
 

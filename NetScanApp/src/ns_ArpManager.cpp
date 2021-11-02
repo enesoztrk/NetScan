@@ -17,8 +17,10 @@ return netif_ip_mac;
 
     pcpp::ArpLayer* arp_packet=incoming_packet.getLayerOfType<pcpp::ArpLayer>();
 
+
      if(pcpp::ARP_REPLY==(arp_packet->getArpHeader()->opcode)>>8){
 
+          //RVO-> return value optimization
          return S_DeviceInfo(arp_packet->getSenderIpAddr(),arp_packet->getSenderMacAddress().toString());
      }
 

@@ -73,7 +73,7 @@ public:
     //reset timer
     base::reset();
 
-    //TODO: will be deleted. reset function should call set_timer
+    //TODO: will be deleted. reset function should
     base::set_timer(true);
 
 
@@ -133,7 +133,7 @@ public:
       }
       else {
            //error occured, go to inactive state
-           base::template transit < Inactive<inum>>();
+          // base::template transit < Inactive<inum>>();
       }
 
   };
