@@ -72,7 +72,7 @@ static bool invoke_ArpMsgRecv_state(ns::common_data_t data_param);
 static bool invoke_DnsMsgRecv_state(ns::common_data_t& data_param);
 
 /*Function to invoke SM  for sending arp request to network*/
-friend  bool invoke_ArpMsgsend_state(ns::common_data_t& data_param);
+static  bool invoke_ArpMsgsend_state(ns::common_data_t& data_param);
 
 /*Receiving Arp Response event */
 void react(Arp_MsgRecv const &);
@@ -137,7 +137,7 @@ static std::pair<States, std::string>& get_state(void);
  * @warning Warning.
  */
 template<int inum>
-bool invoke_ArpMsgsend_state(ns::common_data_t& data_param) {
+bool MsgStateMachine<inum>::invoke_ArpMsgsend_state(ns::common_data_t& data_param) {
 
   auto& state=MsgStateMachine<inum>::get_state().first;
   bool ret_val=false;

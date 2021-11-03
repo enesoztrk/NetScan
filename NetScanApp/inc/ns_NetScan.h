@@ -213,14 +213,12 @@ public:
 
                    common_data.set_common_data(*scan_ip_vec.begin());
 
-             if(NetScan_SM::invoke_ArpMsgsend_state<0>(common_data)){
+                                if(NetScan_SM::fsm_handle::invoke_ArpMsgsend_state(common_data)){
 
-                    scan_ip_vec.erase(scan_ip_vec.begin());
-             }
-             else if(NetScan_SM::invoke_ArpMsgsend_state<1>(common_data))
-                    scan_ip_vec.erase(scan_ip_vec.begin());
-             else if(NetScan_SM::invoke_ArpMsgsend_state<2>(common_data))
-                    scan_ip_vec.erase(scan_ip_vec.begin());
+                                       scan_ip_vec.erase(scan_ip_vec.begin());
+                                }
+
+
 
         }
         else{

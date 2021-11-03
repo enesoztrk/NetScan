@@ -6,7 +6,11 @@
 #include <map>
 #include "ns_SM_utils.h"
 
+namespace ns {
 
+/*forward decleration*/
+struct common_data_t;
+}
 namespace NetScan_SM {
     using namespace tinyfsm;
     using namespace NetScan_SM_Utils;
@@ -30,7 +34,7 @@ namespace NetScan_SM {
     template<> struct ST_NetScan_SM_List<> : tinyfsm::FsmList<> {
 
         static void register_callback(const cb_t& cb, States cb_state) {}
-
+        static bool invoke_ArpMsgsend_state(ns::common_data_t& data_param){}
     };
 
     template<typename F, typename... FF>
@@ -40,6 +44,14 @@ namespace NetScan_SM {
         static void register_callback(const cb_t& cb, States cb_state) {
             F::register_callback(cb, cb_state);
             ST_NetScan_SM_List<FF...>::register_callback(cb,cb_state);
+        }
+
+        static bool invoke_ArpMsgsend_state(ns::common_data_t& data_param) {
+
+            if(F::invoke_ArpMsgsend_state(data_param))
+                return true;
+            ST_NetScan_SM_List<FF...>::invoke_ArpMsgsend_state(data_param);
+            return false;
         }
 
     };
