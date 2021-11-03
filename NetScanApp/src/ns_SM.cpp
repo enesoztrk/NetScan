@@ -250,10 +250,11 @@ template<int inum>
 bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(ns::common_data_t data_param){
 
     bool ret_val=false;
-    if(buffer_data.scan_ip==data_param.scan_ip && get_state().first==States::ARP_MSG_SEND)
+    if(buffer_data.get_scan_ip()==data_param.get_scan_ip() && get_state().first==States::ARP_MSG_SEND)
     {
         ret_val=true;
-        buffer_data.in_packet=data_param.in_packet;
+        buffer_data.set_common_data(buffer_data.get_scan_ip(),std::string(""),data_param.get_in_packet());
+       // buffer_data.in_packet=data_param.in_packet;
         MsgStateMachine<inum>::dispatch(Arp_MsgRecv(inum));
 
 
@@ -270,18 +271,19 @@ template<int inum>
 bool  MsgStateMachine<inum>::invoke_DnsMsgRecv_state(ns::common_data_t* data_param){
 
     bool ret_val=false;
-    if(buffer_data.scan_ip==data_param->scan_ip&& get_state().first==States::DNS_MSG_SEND)
+    if(buffer_data.get_scan_ip()==data_param->get_scan_ip()&& get_state().first==States::DNS_MSG_SEND)
     {
         ret_val=true;
-        buffer_data.in_packet=data_param->in_packet;
+        buffer_data.set_common_data(buffer_data.get_scan_ip(),buffer_data.get_mac_addr(),data_param->get_in_packet());
+        //buffer_data.in_packet=data_param->in_packet;
         MsgStateMachine<inum>::dispatch(Dns_MsgRecv(inum));
 
 
     }
 
-    data_param->in_packet={};
+    data_param->set_common_data();
 
-   return true;
+   return ret_val;
 }
 
 

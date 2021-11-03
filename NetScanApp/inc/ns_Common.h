@@ -9,6 +9,41 @@ namespace ns {
 
 struct common_data_t{
 
+ public:
+    bool set_common_data(const pcpp::IPAddress scan_ip_param=pcpp::IPAddress(),const std::string mac_addr_param=""
+            ,const pcpp::Packet in_packet_param=pcpp::Packet()){
+
+            scan_ip=scan_ip_param;
+            mac_addr=mac_addr_param;
+            in_packet=in_packet_param;
+
+            return true;
+
+    }
+
+    bool set_this_ptr(void* this_ptr_param){
+
+
+        this_ptr=this_ptr_param;
+
+        return true;
+    }
+
+    void* get_this_ptr(){
+        return this_ptr;
+    }
+
+    pcpp::IPAddress& get_scan_ip(){
+        return scan_ip;
+    }
+    pcpp::Packet& get_in_packet(){
+        return in_packet;
+    }
+
+    std::string& get_mac_addr(){
+        return mac_addr;
+    }
+private:
     pcpp::IPAddress scan_ip;
     std::string mac_addr;
     pcpp::Packet   in_packet;

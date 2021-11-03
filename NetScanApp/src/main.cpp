@@ -13,9 +13,9 @@ https://www.fluentcpp.com/2019/07/02/fseam-a-mocking-framework-that-requires-no-
 int main(){
 
 
-    ns::C_NtwrkScan a{pcpp::IPv4Address("192.168.xx")};
+    ns::C_NtwrkScan a{pcpp::IPv4Address("192.168.50.104")};
 
-    a.set_ip_range("192.168.xx","192.168.xx");
+    a.set_ip_range("192.168.50.99","192.168.50.200");
     a.start();
 
     //NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(1));
