@@ -124,11 +124,12 @@ public:
 
       auto ret_val=base::cb_state_process[index](inum,&base::buffer_data);
 
-      //stop timer. Packet received
-      base::set_timer(false);
 
       if(ret_val)
       {
+          //stop timer. Packet received
+          base::set_timer(false);
+
            base::template transit<DnsMsgSend<inum>>();
       }
       else {

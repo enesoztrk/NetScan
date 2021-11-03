@@ -69,10 +69,10 @@ void react(tinyfsm::Event const &);
 static bool invoke_ArpMsgRecv_state(ns::common_data_t data_param);
 
 /*Function to invoke SM  dns response receiving states*/
-static bool invoke_DnsMsgRecv_state(ns::common_data_t* data_param);
+static bool invoke_DnsMsgRecv_state(ns::common_data_t& data_param);
 
 /*Function to invoke SM  for sending arp request to network*/
-friend  bool invoke_ArpMsgsend_state(ns::common_data_t* data_param);
+friend  bool invoke_ArpMsgsend_state(ns::common_data_t& data_param);
 
 /*Receiving Arp Response event */
 void react(Arp_MsgRecv const &);
@@ -103,9 +103,9 @@ static constexpr unsigned char NUM_CB_FUNC=
       static_cast<const unsigned char>(States::COMM_TIMEOUT)+1;
 static inline bool timer_enable_flag{false};
 
-
+static inline auto is_init = true;
 protected:
-static constexpr inline auto timeout_val=250;
+static constexpr inline auto timeout_val=1000;
 
 static inline std::function<bool(const int,void*)> cb_state_process[NUM_CB_FUNC]{nullptr};
 
@@ -137,7 +137,7 @@ static std::pair<States, std::string>& get_state(void);
  * @warning Warning.
  */
 template<int inum>
-bool invoke_ArpMsgsend_state(ns::common_data_t* data_param) {
+bool invoke_ArpMsgsend_state(ns::common_data_t& data_param) {
 
   auto& state=MsgStateMachine<inum>::get_state().first;
   bool ret_val=false;
@@ -145,7 +145,7 @@ bool invoke_ArpMsgsend_state(ns::common_data_t* data_param) {
         States::COMM_TIMEOUT==state ) {
 
         //pass data to be sent to network
-        MsgStateMachine<inum>::buffer_data = *data_param;
+        MsgStateMachine<inum>::buffer_data = data_param;
         MsgStateMachine<inum>::dispatch(Arp_MsgSend(inum));
         ret_val=true;
     }

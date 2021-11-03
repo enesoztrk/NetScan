@@ -213,11 +213,14 @@ public:
 
                    common_data.set_common_data(*scan_ip_vec.begin());
 
-             if(NetScan_SM::invoke_ArpMsgsend_state<0>(&common_data)){
+             if(NetScan_SM::invoke_ArpMsgsend_state<0>(common_data)){
 
                     scan_ip_vec.erase(scan_ip_vec.begin());
              }
-
+             else if(NetScan_SM::invoke_ArpMsgsend_state<1>(common_data))
+                    scan_ip_vec.erase(scan_ip_vec.begin());
+             else if(NetScan_SM::invoke_ArpMsgsend_state<2>(common_data))
+                    scan_ip_vec.erase(scan_ip_vec.begin());
 
         }
         else{
@@ -360,8 +363,12 @@ private:
                  //   temp.scan_ip=arpLayer->getSenderIpAddr();
                    // temp.in_packet=common_data.in_packet;
 
-                    if( arpLayer->getSenderIpAddr().isValid())
-                    NetScan_SM::MsgStateMachine<0>::invoke_ArpMsgRecv_state(common_data);
+                    if( arpLayer->getSenderIpAddr().isValid()){
+                        NetScan_SM::MsgStateMachine<0>::invoke_ArpMsgRecv_state(common_data);
+                        NetScan_SM::MsgStateMachine<1>::invoke_ArpMsgRecv_state(common_data);
+                         NetScan_SM::MsgStateMachine<2>::invoke_ArpMsgRecv_state(common_data);
+
+                    }
 
 
                 }
@@ -380,7 +387,9 @@ private:
                         //FIXME: will be set data
                         common_data.set_common_data();
                         //common_data.scan_ip=ipLayer->getSrcIPAddress();
-                        NetScan_SM::MsgStateMachine<0>::invoke_DnsMsgRecv_state(&common_data);
+                        NetScan_SM::MsgStateMachine<0>::invoke_DnsMsgRecv_state(common_data);
+                        NetScan_SM::MsgStateMachine<1>::invoke_DnsMsgRecv_state(common_data);
+                        NetScan_SM::MsgStateMachine<2>::invoke_DnsMsgRecv_state(common_data);
 
                     }
 
@@ -478,7 +487,10 @@ private:
   static    bool SM_CommTimeout_state_cb(int i,void* ptr){
 
  ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
+
  std::cout<<"SM_CommTimeout_state_cb, " << common_data->get_scan_ip().toString()<<"\n";
+
+
 
   }
 

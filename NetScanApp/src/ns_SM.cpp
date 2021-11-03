@@ -33,16 +33,16 @@ class DnsMsgSend;
 template<int inum>
  void MsgStateMachine<inum>::reset(){
 
-    static auto is_init = true;
 
-    if (!is_init) {
-        set_timer(true);
-        tick_passed = 0;
+
+    if (!MsgStateMachine<inum>::is_init) {
+       MsgStateMachine<inum>:: set_timer(true);
+        MsgStateMachine<inum>::tick_passed = 0;
 
 
     }
     else {
-        is_init = false;
+        MsgStateMachine<inum>::is_init = false;
 
     }
 
@@ -61,7 +61,7 @@ template<int inum>
 template<int inum>
 void MsgStateMachine<inum>::increase_tick(unsigned int tick_param){
 
-  tick_passed +=tick_param;
+  MsgStateMachine<inum>::tick_passed +=tick_param;
 }
 
 /**
@@ -76,7 +76,7 @@ void MsgStateMachine<inum>::increase_tick(unsigned int tick_param){
 template<int inum>
 unsigned int  MsgStateMachine<inum>::get_tick(void){
 
-  return tick_passed;
+  return MsgStateMachine<inum>::tick_passed;
 }
 
 
@@ -92,8 +92,8 @@ unsigned int  MsgStateMachine<inum>::get_tick(void){
 template<int inum>
 bool MsgStateMachine<inum>::set_state(const States& new_state) {
 
-    if(new_state!=curr_state.first)
-    curr_state = { new_state,States_table[new_state] };
+    if(new_state!=MsgStateMachine<inum>::curr_state.first)
+    MsgStateMachine<inum>::curr_state = { new_state,States_table[new_state] };
 
     return true;
 }
@@ -110,7 +110,7 @@ bool MsgStateMachine<inum>::set_state(const States& new_state) {
 template<int inum>
 void MsgStateMachine<inum>::set_timer(bool status){
 
-   timer_enable_flag=status;
+   MsgStateMachine<inum>::timer_enable_flag=status;
 
 }
 
@@ -127,7 +127,7 @@ void MsgStateMachine<inum>::set_timer(bool status){
 template<int inum>
 bool MsgStateMachine<inum>::is_timer_on()const{
 
-    return timer_enable_flag;
+    return MsgStateMachine<inum>::timer_enable_flag;
 }
 
 
@@ -143,7 +143,7 @@ bool MsgStateMachine<inum>::is_timer_on()const{
 template<int inum>
 std::pair<States, std::string>& MsgStateMachine<inum>::get_state(void) {
 
-    return curr_state;
+    return MsgStateMachine<inum>::curr_state;
 }
 
 
@@ -161,7 +161,7 @@ void MsgStateMachine<inum>::register_callback(const cb_t &cb,States cb_state){
 
 
 
-    cb_state_process[static_cast<const unsigned char>(cb_state)]=cb;
+    MsgStateMachine<inum>::cb_state_process[static_cast<const unsigned char>(cb_state)]=cb;
 
 }
 
@@ -200,7 +200,7 @@ void MsgStateMachine<inum>::react(Dns_MsgRecv const &) {
     using base = MsgStateMachine<inum>;
 
     base::set_timer(false);
-  base::template transit<DnsMsgParse<inum>>();
+    base::template transit<DnsMsgParse<inum>>();
 
 }
 
@@ -250,10 +250,10 @@ template<int inum>
 bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(ns::common_data_t data_param){
 
     bool ret_val=false;
-    if(buffer_data.get_scan_ip()==data_param.get_scan_ip() && get_state().first==States::ARP_MSG_SEND)
+    if(MsgStateMachine<inum>::buffer_data.get_scan_ip()==data_param.get_scan_ip() && get_state().first==States::ARP_MSG_SEND)
     {
         ret_val=true;
-        buffer_data.set_common_data(buffer_data.get_scan_ip(),std::string(""),data_param.get_in_packet());
+        MsgStateMachine<inum>::buffer_data.set_common_data(MsgStateMachine<inum>::buffer_data.get_scan_ip(),std::string(""),data_param.get_in_packet());
        // buffer_data.in_packet=data_param.in_packet;
         MsgStateMachine<inum>::dispatch(Arp_MsgRecv(inum));
 
@@ -268,20 +268,21 @@ bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(ns::common_data_t data_para
 
 
 template<int inum>
-bool  MsgStateMachine<inum>::invoke_DnsMsgRecv_state(ns::common_data_t* data_param){
+bool  MsgStateMachine<inum>::invoke_DnsMsgRecv_state(ns::common_data_t& data_param){
 
     bool ret_val=false;
-    if(buffer_data.get_scan_ip()==data_param->get_scan_ip()&& get_state().first==States::DNS_MSG_SEND)
+    if(MsgStateMachine<inum>::buffer_data.get_scan_ip()==data_param.get_scan_ip()&& get_state().first==States::DNS_MSG_SEND)
     {
         ret_val=true;
-        buffer_data.set_common_data(buffer_data.get_scan_ip(),buffer_data.get_mac_addr(),data_param->get_in_packet());
+        MsgStateMachine<inum>::buffer_data.set_common_data(MsgStateMachine<inum>::buffer_data.get_scan_ip(),
+                                                           MsgStateMachine<inum>::buffer_data.get_mac_addr(),
+                                                           data_param.get_in_packet());
         //buffer_data.in_packet=data_param->in_packet;
         MsgStateMachine<inum>::dispatch(Dns_MsgRecv(inum));
 
 
     }
 
-    data_param->set_common_data();
 
    return ret_val;
 }
