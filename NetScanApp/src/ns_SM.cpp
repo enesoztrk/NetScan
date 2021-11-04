@@ -36,7 +36,7 @@ template<int inum>
 
 
     if (!MsgStateMachine<inum>::is_init) {
-       MsgStateMachine<inum>:: set_timer(true);
+      // MsgStateMachine<inum>:: set_timer(true);
         MsgStateMachine<inum>::tick_passed = 0;
 
 
@@ -247,7 +247,7 @@ void MsgStateMachine<inum>::react(Timer_check const &tick) {
 }
 
 template<int inum>
-bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(ns::common_data_t data_param){
+bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(const ns::common_data_t& data_param){
 
     bool ret_val=false;
     if(MsgStateMachine<inum>::buffer_data.get_scan_ip()==data_param.get_scan_ip() && get_state().first==States::ARP_MSG_SEND)
@@ -268,10 +268,10 @@ bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(ns::common_data_t data_para
 
 
 template<int inum>
-bool  MsgStateMachine<inum>::invoke_DnsMsgRecv_state(ns::common_data_t& data_param){
+bool  MsgStateMachine<inum>::invoke_DnsMsgRecv_state(const ns::common_data_t& data_param){
 
     bool ret_val=false;
-    if(MsgStateMachine<inum>::buffer_data.get_scan_ip()==data_param.get_scan_ip()&& get_state().first==States::DNS_MSG_SEND)
+    if(get_state().first==States::DNS_MSG_SEND)
     {
         ret_val=true;
         MsgStateMachine<inum>::buffer_data.set_common_data(MsgStateMachine<inum>::buffer_data.get_scan_ip(),
@@ -292,6 +292,8 @@ bool  MsgStateMachine<inum>::invoke_DnsMsgRecv_state(ns::common_data_t& data_par
  template class MsgStateMachine<0>;
  template class MsgStateMachine<1>;
  template class MsgStateMachine<2>;
+template class MsgStateMachine<3>;
+template class MsgStateMachine<4>;
 
 }//namespace
 
@@ -300,6 +302,8 @@ bool  MsgStateMachine<inum>::invoke_DnsMsgRecv_state(ns::common_data_t& data_par
 FSM_INITIAL_STATE(NetScan_SM::MsgStateMachine<0>, NetScan_SM::Inactive<0> )
 FSM_INITIAL_STATE(NetScan_SM::MsgStateMachine<1>, NetScan_SM::Inactive<1> )
 FSM_INITIAL_STATE(NetScan_SM::MsgStateMachine<2>, NetScan_SM::Inactive<2> )
+FSM_INITIAL_STATE(NetScan_SM::MsgStateMachine<3>, NetScan_SM::Inactive<3> )
+FSM_INITIAL_STATE(NetScan_SM::MsgStateMachine<4>, NetScan_SM::Inactive<4> )
 
 
 

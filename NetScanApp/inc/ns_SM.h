@@ -66,13 +66,13 @@ static void reset();
 void react(tinyfsm::Event const &);
 
 /*Function to invoke SM  arp response receiving states*/
-static bool invoke_ArpMsgRecv_state(ns::common_data_t data_param);
+static bool invoke_ArpMsgRecv_state(const ns::common_data_t& data_param);
 
 /*Function to invoke SM  dns response receiving states*/
-static bool invoke_DnsMsgRecv_state(ns::common_data_t& data_param);
+static bool invoke_DnsMsgRecv_state(const ns::common_data_t& data_param);
 
 /*Function to invoke SM  for sending arp request to network*/
-static  bool invoke_ArpMsgsend_state(ns::common_data_t& data_param);
+static  void invoke_ArpMsgsend_state(bool& ret_val,const ns::common_data_t& data_param);
 
 /*Receiving Arp Response event */
 void react(Arp_MsgRecv const &);
@@ -93,19 +93,19 @@ static void register_callback(const cb_t &cb,States cb_state);
 
 
 //TODO: will be private - get/set functions will be added
-static inline ns::common_data_t buffer_data{};
+static  ns::common_data_t buffer_data;
 
 private:
-static inline unsigned int tick_passed{};
+static unsigned int tick_passed;
 static inline std::pair<States, std::string> prev_state{ States::INACTIVE,States_table[States::INACTIVE] };
-static inline std::pair<States, std::string> curr_state{States::INACTIVE,States_table[States::INACTIVE]  };
+static  std::pair<States, std::string>  curr_state;
 static constexpr unsigned char NUM_CB_FUNC=
       static_cast<const unsigned char>(States::COMM_TIMEOUT)+1;
-static inline bool timer_enable_flag{false};
+static bool timer_enable_flag;
 
-static inline auto is_init = true;
+static  bool is_init;
 protected:
-static constexpr inline auto timeout_val=1000;
+static constexpr inline auto timeout_val=750;
 
 static inline std::function<bool(const int,void*)> cb_state_process[NUM_CB_FUNC]{nullptr};
 
@@ -127,6 +127,20 @@ static std::pair<States, std::string>& get_state(void);
 
 };
 
+template<int inum>
+std::pair<States, std::string>  MsgStateMachine<inum>::curr_state{States::INACTIVE,States_table[States::INACTIVE]  };
+
+template<int inum>
+unsigned int  MsgStateMachine<inum>::tick_passed{};
+
+template<int inum>
+ns::common_data_t MsgStateMachine<inum>::buffer_data{};
+
+template<int inum>
+bool MsgStateMachine<inum>::timer_enable_flag{false};
+
+template<int inum>
+bool MsgStateMachine<inum>::is_init{ true };
 /**
  * @brief
  *
@@ -137,10 +151,10 @@ static std::pair<States, std::string>& get_state(void);
  * @warning Warning.
  */
 template<int inum>
-bool MsgStateMachine<inum>::invoke_ArpMsgsend_state(ns::common_data_t& data_param) {
+void MsgStateMachine<inum>::invoke_ArpMsgsend_state(bool& ret_val,const ns::common_data_t& data_param) {
 
   auto& state=MsgStateMachine<inum>::get_state().first;
-  bool ret_val=false;
+
     if (States::INACTIVE==state ||
         States::COMM_TIMEOUT==state ) {
 
@@ -148,10 +162,12 @@ bool MsgStateMachine<inum>::invoke_ArpMsgsend_state(ns::common_data_t& data_para
         MsgStateMachine<inum>::buffer_data = data_param;
         MsgStateMachine<inum>::dispatch(Arp_MsgSend(inum));
         ret_val=true;
-    }
+    }else {
+            ret_val=false;
+}
 
 
-    return ret_val;
+
 }
 // ----------------------------------------------------------------------------
 // 4. State Machine List Declaration
@@ -159,7 +175,9 @@ bool MsgStateMachine<inum>::invoke_ArpMsgsend_state(ns::common_data_t& data_para
 using fsm_handle = NetScan_SM::ST_NetScan_SM_List<
   NetScan_SM::MsgStateMachine<0>,
   NetScan_SM::MsgStateMachine<1>,
-  NetScan_SM::MsgStateMachine<2>
+  NetScan_SM::MsgStateMachine<2>,
+  NetScan_SM::MsgStateMachine<3>,
+  NetScan_SM::MsgStateMachine<4>
   >;
 
 }//namespace

@@ -33,14 +33,14 @@ struct common_data_t{
         return this_ptr;
     }
 
-    pcpp::IPAddress& get_scan_ip(){
+    const pcpp::IPAddress& get_scan_ip()const{
         return scan_ip;
     }
-    pcpp::Packet& get_in_packet(){
+    const pcpp::Packet& get_in_packet()const{
         return in_packet;
     }
 
-    std::string& get_mac_addr(){
+    const std::string& get_mac_addr()const{
         return mac_addr;
     }
 private:

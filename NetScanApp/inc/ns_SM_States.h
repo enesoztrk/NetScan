@@ -33,6 +33,8 @@ public:
     base::set_state(States::INACTIVE);
 
     //stop timer. Packet received
+
+    base::reset();
     base::set_timer(false);
     if(nullptr==base::cb_state_process[index])
         throw SM_exception{"Inactive State Callback func is null"};
@@ -74,7 +76,7 @@ public:
     base::reset();
 
     //TODO: will be deleted. reset function should
-    base::set_timer(true);
+   base::set_timer(true);
 
 
     //send packet
@@ -168,7 +170,7 @@ public:
 
     //reset timer
     base::reset();
-
+    base::set_timer(true);
     base::set_state(States::DNS_MSG_SEND);
 
 

@@ -14,9 +14,13 @@
 #include "ns_DnsManager.h"
 #include <exception>
 #include "ns_SM.h"
+#include <unistd.h>
+
 namespace ns {
 
-
+//TODO: this will be local variable
+//create an empty packet vector object
+std::vector<pcpp::RawPacket> packetVec{};
 
 template<typename T=C_ArpManager, typename U=C_DnsManager>
 class CT_NtwrkScan{
@@ -132,7 +136,7 @@ public:
 
 
             // start capture in async mode. Give a callback function to call to whenever a packet is captured and the stats object as the cookie
-                if(  dev->startCapture(packetVec))//if(dev->startCapture(onPacketArrives, NULL))
+                if(dev->startCapture(onPacketArrives, NULL))//if(  dev->startCapture(packetVec))//if(dev->startCapture(onPacketArrives, NULL))
                     ret_val=true;
 
         }
@@ -212,8 +216,9 @@ public:
         if(!scan_ip_vec.empty() ){
 
                    common_data.set_common_data(*scan_ip_vec.begin());
-
-                                if(NetScan_SM::fsm_handle::invoke_ArpMsgsend_state(common_data)){
+                    bool ret_val=false;
+                    NetScan_SM::fsm_handle::invoke_ArpMsgsend_state(ret_val,common_data);
+                                if(ret_val){
 
                                        scan_ip_vec.erase(scan_ip_vec.begin());
                                 }
@@ -235,7 +240,7 @@ public:
 
         in_data_dispatch();
 
-        NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(NetScan_SM::get_ticks_passed_until_now()));
+        NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(1));
 
     }
 
@@ -289,10 +294,16 @@ public:
         return *c_dns;
     }
 
-
+    static void onPacketArrives(pcpp::RawPacket* packet, pcpp::PcapLiveDevice* dev, void* cookie)
+    {
+            //TODO: mutex lock will be here.
+        // create an empty packet vector object
+        packetVec.push_back(*packet);
+        //TODO: mutex unlock will be here
+        }
 private:
-    // create an empty packet vector object
-    pcpp::RawPacketVector packetVec{};
+
+   //pcpp::RawPacketVector packetVec{};
     std::vector<pcpp::IPv4Address> scan_ip_vec{};
     common_data_t common_data{};
     std::unique_ptr<pcpp::PcapLiveDevice> dev{nullptr};
@@ -341,9 +352,8 @@ private:
 
         if(packetVec.size()!=0){
 
-
-               // common_data.in_packet=*packetVec.begin();
-                pcpp::Packet temp_packet=*packetVec.begin();
+                pcpp::RawPacket x=*packetVec.begin();
+                pcpp::Packet temp_packet(&x);
 
 
 
@@ -357,14 +367,10 @@ private:
 
                     common_data.set_common_data(arpLayer->getSenderIpAddr(),std::string(""),temp_packet);
 
-                  //  common_data_t temp;
-                 //   temp.scan_ip=arpLayer->getSenderIpAddr();
-                   // temp.in_packet=common_data.in_packet;
+
 
                     if( arpLayer->getSenderIpAddr().isValid()){
-                        NetScan_SM::MsgStateMachine<0>::invoke_ArpMsgRecv_state(common_data);
-                        NetScan_SM::MsgStateMachine<1>::invoke_ArpMsgRecv_state(common_data);
-                         NetScan_SM::MsgStateMachine<2>::invoke_ArpMsgRecv_state(common_data);
+                         NetScan_SM::fsm_handle::invoke_ArpMsgRecv_state(common_data);
 
                     }
 
@@ -383,11 +389,10 @@ private:
                     if(ipLayer->getSrcIPAddress()==gateway_mac_ip.ip && ipLayer->getDstIPAddress()==netif_mac_ip.ip){
 
                         //FIXME: will be set data
-                        common_data.set_common_data();
-                        //common_data.scan_ip=ipLayer->getSrcIPAddress();
-                        NetScan_SM::MsgStateMachine<0>::invoke_DnsMsgRecv_state(common_data);
-                        NetScan_SM::MsgStateMachine<1>::invoke_DnsMsgRecv_state(common_data);
-                        NetScan_SM::MsgStateMachine<2>::invoke_DnsMsgRecv_state(common_data);
+                        common_data.set_common_data(pcpp::IPAddress(),std::string(""),temp_packet);
+
+
+                        NetScan_SM::fsm_handle::invoke_DnsMsgRecv_state(common_data);
 
                     }
 
@@ -425,7 +430,9 @@ private:
        ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
         CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->get_this_ptr());
 
-       this_ptr->sendpacket(this_ptr->c_arp->generate_arp_req(common_data->get_scan_ip(). getIPv4()));
+            for(auto i=0;i<5;i++)
+            this_ptr->sendpacket(this_ptr->c_arp->generate_arp_req(common_data->get_scan_ip(). getIPv4()));
+
 
     std::cout<<"SM_Arpmsg_send_state_cb: "<< common_data->get_scan_ip().toString()<< "\n";
     return true;
@@ -471,7 +478,7 @@ private:
       ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
        CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->get_this_ptr());
 
-       auto response=this_ptr->c_dns->parse_dns_resp(common_data->get_in_packet());
+       const auto response=this_ptr->c_dns->parse_dns_resp(common_data->get_in_packet());
 
        if(response.second!=pcpp::IPAddress(""))
        auto iter=this_ptr->find_ip_in_device_list_return(response.second);

@@ -152,7 +152,7 @@ public:
         * @note
         * @warning Warning.
         */
-    std::pair<std::string, pcpp::IPAddress> parse_dns_resp(pcpp::Packet& incoming_packet);
+    std::pair<std::string, pcpp::IPAddress> parse_dns_resp(const pcpp::Packet& incoming_packet);
      /**
        * @brief
        *

@@ -5,7 +5,7 @@
 
 
 
-std::pair<std::string, pcpp::IPAddress> ns::C_DnsManager::parse_dns_resp(pcpp::Packet& incoming_packet){
+std::pair<std::string, pcpp::IPAddress> ns::C_DnsManager::parse_dns_resp(const pcpp::Packet& incoming_packet){
 
 
     auto dns_packet=incoming_packet.getLayerOfType<pcpp::DnsLayer>();
