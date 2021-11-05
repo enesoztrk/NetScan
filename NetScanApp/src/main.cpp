@@ -27,7 +27,7 @@ int main(){
 
 
         a.run();
-        //usleep(1000);
+        usleep(1000);
    }
     return 0;
 }
