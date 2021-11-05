@@ -141,34 +141,7 @@ bool MsgStateMachine<inum>::timer_enable_flag{false};
 
 template<int inum>
 bool MsgStateMachine<inum>::is_init{ true };
-/**
- * @brief
- *
- *
- * @param none
- * @return
- * @note
- * @warning Warning.
- */
-template<int inum>
-void MsgStateMachine<inum>::invoke_ArpMsgsend_state(bool& ret_val,const ns::common_data_t& data_param) {
 
-  auto& state=MsgStateMachine<inum>::get_state().first;
-
-    if (States::INACTIVE==state ||
-        States::COMM_TIMEOUT==state ) {
-
-        //pass data to be sent to network
-        MsgStateMachine<inum>::buffer_data = data_param;
-        MsgStateMachine<inum>::dispatch(Arp_MsgSend(inum));
-        ret_val=true;
-    }else {
-            ret_val=false;
-}
-
-
-
-}
 // ----------------------------------------------------------------------------
 // 4. State Machine List Declaration
 //

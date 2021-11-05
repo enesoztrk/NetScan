@@ -246,6 +246,38 @@ void MsgStateMachine<inum>::react(Timer_check const &tick) {
      return;
 }
 
+
+/**
+ * @brief
+ *
+ *
+ * @param none
+ * @return
+ * @note
+ * @warning Warning.
+ */
+template<int inum>
+void MsgStateMachine<inum>::invoke_ArpMsgsend_state(bool& ret_val,const ns::common_data_t& data_param) {
+
+  auto& state=MsgStateMachine<inum>::get_state().first;
+
+    if (States::INACTIVE==state ||
+        States::COMM_TIMEOUT==state ) {
+
+        //pass data to be sent to network
+        MsgStateMachine<inum>::buffer_data = data_param;
+        MsgStateMachine<inum>::dispatch(Arp_MsgSend(inum));
+        ret_val=true;
+    }else {
+            ret_val=false;
+}
+
+
+
+}
+
+
+
 template<int inum>
 bool  MsgStateMachine<inum>::invoke_ArpMsgRecv_state(const ns::common_data_t& data_param){
 

@@ -19,8 +19,7 @@
 namespace ns {
 
 //TODO: this will be local variable
-//create an empty packet vector object
-std::vector<pcpp::RawPacket> packetVec{};
+
 
 template<typename T=C_ArpManager, typename U=C_DnsManager>
 class CT_NtwrkScan{
@@ -112,7 +111,7 @@ public:
               NetScan_SM::fsm_handle::register_callback(SM_Arpmsg_parse_state_cb, NetScan_SM::States::ARP_MSG_PARSE);
               NetScan_SM::fsm_handle::register_callback(SM_Dnsmsg_send_state_cb, NetScan_SM::States::DNS_MSG_SEND);
               NetScan_SM::fsm_handle::register_callback(SM_Dnsmsg_parse_state_cb, NetScan_SM::States::DNS_MSG_PARSE);
-               NetScan_SM::fsm_handle::register_callback(SM_CommTimeout_state_cb, NetScan_SM::States::COMM_TIMEOUT);
+              NetScan_SM::fsm_handle::register_callback(SM_CommTimeout_state_cb, NetScan_SM::States::COMM_TIMEOUT);
 
 
 
@@ -199,10 +198,21 @@ public:
             ip_bytes[3]=i;
 
             /*do not send arp req to our ip addr*/
-            if(i!=dev->getIPv4Address().toBytes()[3])
-            scan_ip_vec.push_back(pcpp::IPv4Address(ip_bytes));
+            if(i!=dev->getIPv4Address().toBytes()[3]){
+
+                  scan_ip_vec.push_back(pcpp::IPv4Address(ip_bytes));
+            }
+
 
         }
+
+           for(auto& i:scan_ip_vec)
+             scan_ip_vec.push_back(i);
+
+
+           for(auto& i:scan_ip_vec)
+             scan_ip_vec.push_back(i);
+
 
         return ret_val;
     }
@@ -294,15 +304,33 @@ public:
         return *c_dns;
     }
 
+    static std::vector<pcpp::RawPacket>&  get_packet_vec(){
+
+               return packetVec;
+    }
+
+    static bool set_raw_packet(pcpp::RawPacket& packet){
+
+                packetVec.push_back(packet);
+
+                return true;
+    }
+
     static void onPacketArrives(pcpp::RawPacket* packet, pcpp::PcapLiveDevice* dev, void* cookie)
     {
             //TODO: mutex lock will be here.
         // create an empty packet vector object
-        packetVec.push_back(*packet);
+      //  packetVec.push_back(*packet);
+          set_raw_packet(*packet);
+
         //TODO: mutex unlock will be here
         }
-private:
 
+
+
+private:
+    //create an empty packet vector object
+    static inline  std::vector<pcpp::RawPacket> packetVec{};
    //pcpp::RawPacketVector packetVec{};
     std::vector<pcpp::IPv4Address> scan_ip_vec{};
     common_data_t common_data{};
@@ -350,10 +378,9 @@ private:
     void in_data_dispatch(){
 
 
-        if(packetVec.size()!=0){
+        if(get_packet_vec().size()!=0){
 
-                pcpp::RawPacket x=*packetVec.begin();
-                pcpp::Packet temp_packet(&x);
+                pcpp::Packet temp_packet(&(*get_packet_vec().begin()));
 
 
 
@@ -401,7 +428,7 @@ private:
                 }
 
 
-                packetVec.erase(packetVec.begin());
+                get_packet_vec().erase(get_packet_vec().begin());
 
         }
 
@@ -430,7 +457,7 @@ private:
        ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
         CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->get_this_ptr());
 
-            for(auto i=0;i<5;i++)
+          //  for(auto i=0;i<3";i++)
             this_ptr->sendpacket(this_ptr->c_arp->generate_arp_req(common_data->get_scan_ip(). getIPv4()));
 
 
@@ -447,9 +474,10 @@ private:
 
 
 
-        if(response.ip==common_data->get_scan_ip()){
+        if(response.ip==common_data->get_scan_ip() ){
             common_data->set_common_data(response.ip,response.mac_addr);
             //common_data->mac_addr=response.mac_addr;
+            if(!this_ptr->find_ip_in_device_list(response.ip))
             this_ptr->dev_table[response]="";
             b_ret_val=true;
         }
