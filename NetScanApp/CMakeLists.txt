@@ -6,6 +6,7 @@ SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -frtti")
 set(Sources__Packet
     "src/ns_ArpManager.cpp"
     "src/ns_DnsManager.cpp"
+    "src/ns_NetScan.cpp"
 )
 
 set(Sources

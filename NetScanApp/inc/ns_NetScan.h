@@ -18,241 +18,98 @@
 
 namespace ns {
 
-//TODO: this will be local variable
 
 
 template<typename T=C_ArpManager, typename U=C_DnsManager>
 class CT_NtwrkScan{
 
 public:
-    CT_NtwrkScan()=delete;
+
+   CT_NtwrkScan()=delete;
+
+    /**
+     * @brief Ctor to find NIC by using IP parameter and get parameters from NIC
+     *
+     *
+     * @param IP addr of NIC
+     * @return none
+     * @note
+     * @warning If there is no NIC which matches with IP addr, exception will be threw.(std::invalid_argument)
+     */
+    explicit CT_NtwrkScan(const pcpp::IPAddress& ethif_ip);
+
+   /**
+    * @brief Ctor to find NIC by using NIC name
+    *
+    *
+    * @param NIC name
+    * @return none
+    * @note
+    * @warning If there is no NIC which matches ethif_name parameter, exception will be threw.(std::invalid_argument)
+    */
+    explicit CT_NtwrkScan(const std::string& ethif_name);
 
 
 
-    CT_NtwrkScan(const pcpp::IPAddress& ethif_ip){
+   /**
+    * @brief function to start State machine and packet capturing functionalities
+    *
+    *
+    * @param none
+    * @return bool, ok is true
+    * @note
+    * @warning
+    */
+    bool start();
 
-        // find the interface by IP address
-      dev.reset(pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(ethif_ip));
-
-      if (dev == nullptr)
-        {
-            std::cerr<<"Cannot find interface with IPv4 address of "<<ethif_ip.toString()<<"\n";
-            throw std::invalid_argument{"Cannot find network interface from IP addr"};
-
-        }
-
-
-        init_dev_params(dev);
-
-
-        if (!dev->open(pcap_config))
-        {
-            std::cerr<<"Cannot open device\n";
-            throw std::invalid_argument{"Cannot open the device"};
-
-        }
-
-        set_ntwrk_filter();
-
-        common_data.set_this_ptr(this);
-
-      //  common_data.this_ptr=this;
-
-
-    }
-
-    CT_NtwrkScan(const std::string& ethif_name){
-
-         dev.reset(pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(ethif_name));
-          if (dev == nullptr)
-          {
-              std::cerr<<"Cannot find interface  "<<ethif_name<<"\n";
-             throw std::invalid_argument{"Cannot find network interface from netif name"};
-          }
-
-       init_dev_params(dev);
-
-       if (!dev->open(pcap_config))
-       {
-           std::cerr<<"Cannot open device\n";
-           throw std::invalid_argument{"Cannot open the device"};
-
-       }
-       set_ntwrk_filter();
-    }
-
-
-    bool set_ntwrk_filter(){
-        // set a BPF filter for the reader - only packets that match the filter will be read
-         pcpp::ProtoFilter protocolArpFilter(pcpp::ARP);
-        pcpp::PortFilter protocolDNSPortFilter(53,pcpp::SRC);
-         pcpp::PortFilter protocolmDNSPortFilter(5353,pcpp::SRC);
-
-
-        // create an OR filter to combine both filters - capture only ARP or DNS packets
-        pcpp::OrFilter  OrFilter;
-        OrFilter.addFilter(&protocolArpFilter);
-        OrFilter.addFilter(&protocolDNSPortFilter);
-        OrFilter.addFilter(&protocolmDNSPortFilter);
-
-            if (!dev->setFilter(OrFilter))
-            {
-                std::cerr << "Cannot set filter for " <<dev->getName()<< std::endl;
-                throw std::invalid_argument{"filter cannot applied for "+dev->getName()};
-            }
-
-            return true;
-    }
-
-    bool start(){
-
-              NetScan_SM::fsm_handle::register_callback(SM_Inactive_state_cb, NetScan_SM::States::INACTIVE);
-              NetScan_SM::fsm_handle::register_callback(SM_Arpmsg_send_state_cb, NetScan_SM::States::ARP_MSG_SEND);
-              NetScan_SM::fsm_handle::register_callback(SM_Arpmsg_parse_state_cb, NetScan_SM::States::ARP_MSG_PARSE);
-              NetScan_SM::fsm_handle::register_callback(SM_Dnsmsg_send_state_cb, NetScan_SM::States::DNS_MSG_SEND);
-              NetScan_SM::fsm_handle::register_callback(SM_Dnsmsg_parse_state_cb, NetScan_SM::States::DNS_MSG_PARSE);
-              NetScan_SM::fsm_handle::register_callback(SM_CommTimeout_state_cb, NetScan_SM::States::COMM_TIMEOUT);
-
-
-
-        //SM start
-        NetScan_SM::fsm_handle::start();
-
-
-
-
-        //start capture
-        start_packet_capture();
-
-    }
-    bool start_packet_capture(){
-        bool ret_val=false;
-
-
-            // start capturing packets. All packets will be added to the packet vector
-
-        if(dev->isOpened()){
-
-
-            // start capture in async mode. Give a callback function to call to whenever a packet is captured and the stats object as the cookie
-                if(dev->startCapture(onPacketArrives, NULL))//if(  dev->startCapture(packetVec))//if(dev->startCapture(onPacketArrives, NULL))
-                    ret_val=true;
-
-        }
-
-        return ret_val;
-
-    }
-    bool stop_packet_capture(){
-
-
-        if(dev->captureActive()){
-            dev->stopCapture();
-        }
-
-        return true;
-    }
-
-
+    /**
+     * @brief function to stop State machine and packet capturing functionalities
+     *
+     *
+     * @param none
+     * @return bool, ok is true
+     * @note
+     * @warning
+     */
     bool stop();
 
-    const dev_info_t& get_device_list()const{
 
-        return dev_table;
-
-    }
-
-    bool set_ip_range(const std::string& low_bound_ip,const std::string& high_bound_ip ){
-
-        bool ret_val=true;
-        uint8_t ip_bytes[4]{};
-        low_bound_ip_addr=pcpp::IPv4Address(low_bound_ip);
-        high_bound_ip_addr=pcpp::IPv4Address(high_bound_ip);
-        
+    /**
+     * @brief function to get scanned device list that are online on the network
+     *
+     *
+     * @param none
+     * @return const dev_info_t&
+     * @note
+     * @warning
+     */
+    const dev_info_t& get_device_list()const;
 
 
 
-      for(auto i=0;i<3;++i){
-
-           if (low_bound_ip_addr.toBytes()[i]!=low_bound_ip_addr.toBytes()[i])
-                    ret_val=false;
-
-      }
-
-        if(ret_val==true && low_bound_ip_addr.toBytes()[3]<high_bound_ip_addr.toBytes()[3]){
-            ip_bytes[0]=low_bound_ip_addr.toBytes()[0];
-            ip_bytes[1]=low_bound_ip_addr.toBytes()[1];
-            ip_bytes[2]=low_bound_ip_addr.toBytes()[2];
-
-            //reservation for number of ip address
-            scan_ip_vec.reserve(high_bound_ip_addr.toBytes()[3]-low_bound_ip_addr.toBytes()[3]);
-        }
-        else
-            ret_val=false;
-
-         /*First of all, arp req will be sent to learn gateway mac addr*/
-         scan_ip_vec.push_back(dev->getDefaultGateway());
-
-        for(auto i=low_bound_ip_addr.toBytes()[3];(ret_val==true && i<=high_bound_ip_addr.toBytes()[3] );++i){
-
-            ip_bytes[3]=i;
-
-            /*do not send arp req to our ip addr*/
-            if(i!=dev->getIPv4Address().toBytes()[3]){
-
-                  scan_ip_vec.push_back(pcpp::IPv4Address(ip_bytes));
-            }
-
-
-        }
-
-           for(auto& i:scan_ip_vec)
-             scan_ip_vec.push_back(i);
-
-
-           for(auto& i:scan_ip_vec)
-             scan_ip_vec.push_back(i);
-
-
-        return ret_val;
-    }
-
-
-    void run(){
+    /**
+     * @brief function to set ip addr range to scan network
+     *
+     *
+     * @param low_bound_ip , high_bound_ip
+     * @return bool
+     * @note This function will be changed to work properly for every subnet
+     * @warning it is only valid for 255.255.255.0 subnet
+     */
+    bool set_ip_range(const std::string& low_bound_ip,const std::string& high_bound_ip );
 
 
 
-        
-        if(!scan_ip_vec.empty() ){
-
-                   common_data.set_common_data(*scan_ip_vec.begin());
-                    bool ret_val=false;
-                    NetScan_SM::fsm_handle::invoke_ArpMsgsend_state(ret_val,common_data);
-                                if(ret_val){
-
-                                       scan_ip_vec.erase(scan_ip_vec.begin());
-                                }
-
-
-
-        }
-        else{
-            std::cout<<"===Device list===\n";
-            for(auto& iter:dev_table ){
-
-                std::cout<<"IPaddr: "<<iter.first.ip.toString()<<" Mac addr: "<<iter.first.mac_addr<<"\n";
-
-
-            }
-            exit(1);
-        }
-
-
-        in_data_dispatch();
-
-        NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(1));
-
-    }
+    /**
+     * @brief function to process SM and network data exchange
+     *
+     *
+     * @param none
+     * @return void
+     * @note This function only call in a loop for every ms
+     * @warning
+     */
+    void run();
 
 
     bool find_ip_in_device_list(const pcpp::IPAddress& ip){
@@ -263,8 +120,7 @@ public:
         decltype (dev_table.begin()) result1 = std::find_if(begin(dev_table), end(dev_table), is_ip_same);
 
           if(result1!=end(dev_table)){
-              // result1->second=ret_val2.first;
-              std::cout << "found\n";
+
               ret_val=true;
           }
 
@@ -280,9 +136,7 @@ public:
              auto result1 = std::find_if(begin(dev_table), end(dev_table), is_ip_same);
 
              if(result1!=end(dev_table)){
-                 // result1->second=ret_val2.first;
-                 std::cout << "found\n";
-                // ret_val=true;
+
                  ret_val=result1;
              }
 
@@ -304,27 +158,9 @@ public:
         return *c_dns;
     }
 
-    static std::vector<pcpp::RawPacket>&  get_packet_vec(){
 
-               return packetVec;
-    }
 
-    static bool set_raw_packet(pcpp::RawPacket& packet){
 
-                packetVec.push_back(packet);
-
-                return true;
-    }
-
-    static void onPacketArrives(pcpp::RawPacket* packet, pcpp::PcapLiveDevice* dev, void* cookie)
-    {
-            //TODO: mutex lock will be here.
-        // create an empty packet vector object
-      //  packetVec.push_back(*packet);
-          set_raw_packet(*packet);
-
-        //TODO: mutex unlock will be here
-        }
 
 
 
@@ -349,6 +185,51 @@ private:
     bool add_dev_list(const pcpp::MacAddress&);//add mac address
     bool add_dev_list(const std::string&);//add dns hostname
 
+    bool set_ntwrk_filter();
+    static bool set_raw_packet(pcpp::RawPacket& packet){
+
+                packetVec.push_back(packet);
+
+                return true;
+    }
+
+    static std::vector<pcpp::RawPacket>&  get_packet_vec(){
+
+               return packetVec;
+    }
+
+    static void onPacketRecvCb(pcpp::RawPacket* packet, pcpp::PcapLiveDevice* dev, void* cookie)
+    {
+            //TODO: mutex lock will be here.
+        // create an empty packet vector object
+      //  packetVec.push_back(*packet);
+          set_raw_packet(*packet);
+
+        //TODO: mutex unlock will be here
+        }
+
+    /**
+     * @brief function to start packet capturing functionality
+     *
+     *
+     * @param none
+     * @return bool, ok is true
+     * @note
+     * @warning It does not need to be called again, if start function has been called
+     */
+    bool start_packet_capture();
+
+
+    /**
+     * @brief function to stop  packet capturing functionality
+     *
+     *
+     * @param none
+     * @return bool, ok is true
+     * @note
+     * @warning It does not need to be called again, if stop function has been called
+     */
+    bool stop_packet_capture();
 
     bool init_dev_params( std::unique_ptr<pcpp::PcapLiveDevice>& dev){
 
@@ -528,6 +409,274 @@ private:
   }
 
 };
+
+
+
+// DEFINITIONS
+
+// --------------------------------------------------------------------------
+
+template<typename T, typename U>
+CT_NtwrkScan<T,U>::CT_NtwrkScan(const pcpp::IPAddress& ethif_ip){
+
+    // find the interface by IP address
+  dev.reset(pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(ethif_ip));
+
+  if (dev == nullptr)
+    {
+        std::cerr<<"Cannot find interface with IPv4 address of "<<ethif_ip.toString()<<"\n";
+        throw std::invalid_argument{"Cannot find network interface from IP addr"};
+
+    }
+
+    //init NIC params
+    init_dev_params(dev);
+
+
+    if (!dev->open(pcap_config))
+    {
+        std::cerr<<"Cannot open device\n";
+        throw std::invalid_argument{"Cannot open the device"};
+
+    }
+
+
+    set_ntwrk_filter();
+
+    //set instance of this pointer.This required for callback functions to get access shared data
+    common_data.set_this_ptr(this);
+
+
+
+}
+
+
+// --------------------------------------------------------------------------
+
+template<typename T, typename U>
+CT_NtwrkScan<T,U>::CT_NtwrkScan(const std::string& ethif_name){
+
+          dev.reset(pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(ethif_name));
+           if (dev == nullptr)
+           {
+               std::cerr<<"Cannot find interface  "<<ethif_name<<"\n";
+              throw std::invalid_argument{"Cannot find network interface from netif name"};
+           }
+
+        init_dev_params(dev);
+
+        if (!dev->open(pcap_config))
+        {
+            std::cerr<<"Cannot open device\n";
+            throw std::invalid_argument{"Cannot open the device"};
+
+        }
+        set_ntwrk_filter();
+
+
+}
+
+// --------------------------------------------------------------------------
+template<typename T, typename U>
+bool CT_NtwrkScan<T,U>::set_ntwrk_filter(){
+
+
+    // set a BPF filter for the reader - only packets that match the filter will be read
+     pcpp::ProtoFilter protocolArpFilter(pcpp::ARP);
+     //DNS port 53
+    pcpp::PortFilter protocolDNSPortFilter(53,pcpp::SRC);
+    //mDNS port 5353
+    pcpp::PortFilter protocolmDNSPortFilter(5353,pcpp::SRC);
+
+
+    // create an OR filter to combine both filters - capture only ARP,DNS and mDNS packets
+    pcpp::OrFilter  OrFilter;
+    OrFilter.addFilter(&protocolArpFilter);
+    OrFilter.addFilter(&protocolDNSPortFilter);
+    OrFilter.addFilter(&protocolmDNSPortFilter);
+
+        if (!dev->setFilter(OrFilter))
+        {
+            std::cerr << "Cannot set filter for " <<dev->getName()<< std::endl;
+            throw std::invalid_argument{"filter cannot applied for "+dev->getName()};
+        }
+
+        return true;
+}
+
+
+// --------------------------------------------------------------------------
+template<typename T, typename U>
+bool CT_NtwrkScan<T,U>::start(){
+
+    bool ret_val=false;
+
+          NetScan_SM::fsm_handle::register_callback(SM_Inactive_state_cb, NetScan_SM::States::INACTIVE);
+          NetScan_SM::fsm_handle::register_callback(SM_Arpmsg_send_state_cb, NetScan_SM::States::ARP_MSG_SEND);
+          NetScan_SM::fsm_handle::register_callback(SM_Arpmsg_parse_state_cb, NetScan_SM::States::ARP_MSG_PARSE);
+          NetScan_SM::fsm_handle::register_callback(SM_Dnsmsg_send_state_cb, NetScan_SM::States::DNS_MSG_SEND);
+          NetScan_SM::fsm_handle::register_callback(SM_Dnsmsg_parse_state_cb, NetScan_SM::States::DNS_MSG_PARSE);
+          NetScan_SM::fsm_handle::register_callback(SM_CommTimeout_state_cb, NetScan_SM::States::COMM_TIMEOUT);
+
+
+
+    //SM start
+    NetScan_SM::fsm_handle::start();
+
+
+
+
+    //start capture
+    if(start_packet_capture())
+        ret_val=true;
+
+    return ret_val;
+
+}
+
+// --------------------------------------------------------------------------
+template<typename T, typename U>
+const dev_info_t& CT_NtwrkScan<T,U>::get_device_list()const{
+
+    return dev_table;
+
+}
+
+// --------------------------------------------------------------------------
+template<typename T, typename U>
+bool CT_NtwrkScan<T,U>::set_ip_range(const std::string& low_bound_ip,const std::string& high_bound_ip ){
+
+    bool ret_val=true;
+    uint8_t ip_bytes[4]{};
+    low_bound_ip_addr=pcpp::IPv4Address(low_bound_ip);
+    high_bound_ip_addr=pcpp::IPv4Address(high_bound_ip);
+
+
+
+  //TODO: This function will be changed to work properly for every subnet
+  //Check whether tho Ip addrs are in same network.
+  //But it is only valid for 255.255.255.0 subnet
+  for(auto i=0;i<3;++i){
+
+       if (low_bound_ip_addr.toBytes()[i]!=dev->getIPv4Address().toBytes()[i])
+                ret_val=false;
+
+  }
+
+    if(ret_val==true && low_bound_ip_addr.toBytes()[3]<high_bound_ip_addr.toBytes()[3]){
+        ip_bytes[0]=low_bound_ip_addr.toBytes()[0];
+        ip_bytes[1]=low_bound_ip_addr.toBytes()[1];
+        ip_bytes[2]=low_bound_ip_addr.toBytes()[2];
+
+        //reservation for number of ip addresses
+        scan_ip_vec.reserve(high_bound_ip_addr.toBytes()[3]-low_bound_ip_addr.toBytes()[3]);
+    }
+    else
+        ret_val=false;
+
+     if(true==ret_val)
+     /*First of all, arp req will be sent to learn gateway mac addr*/
+     scan_ip_vec.push_back(dev->getDefaultGateway());
+
+    for(auto i=low_bound_ip_addr.toBytes()[3];(ret_val==true && i<=high_bound_ip_addr.toBytes()[3] );++i){
+
+        ip_bytes[3]=i;
+
+        /*do not send arp req to IP addr of our NIC */
+        if(i!=dev->getIPv4Address().toBytes()[3]){
+
+              scan_ip_vec.push_back(pcpp::IPv4Address(ip_bytes));
+        }
+
+
+    }
+
+      //TODO: to be deleted
+       for(auto& i:scan_ip_vec)
+         scan_ip_vec.push_back(i);
+
+         //TODO: to be deleted
+       for(auto& i:scan_ip_vec)
+         scan_ip_vec.push_back(i);
+
+
+    return ret_val;
+}
+
+// --------------------------------------------------------------------------
+template<typename T, typename U>
+void CT_NtwrkScan<T,U>::run(){
+
+
+
+
+    if(!scan_ip_vec.empty() ){
+
+               common_data.set_common_data(*scan_ip_vec.begin());
+                bool ret_val=false;
+                NetScan_SM::fsm_handle::invoke_ArpMsgsend_state(ret_val,common_data);
+                            if(ret_val){
+
+                                   scan_ip_vec.erase(scan_ip_vec.begin());
+                            }
+
+
+
+    }
+    else{
+        std::cout<<"===Device list===\n";
+        for(auto& iter:dev_table ){
+
+            std::cout<<"IPaddr: "<<iter.first.ip.toString()<<" Mac addr: "<<iter.first.mac_addr<<"\n";
+
+
+        }
+        exit(1);
+    }
+
+
+    in_data_dispatch();
+
+    NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(1));
+
+}
+// --------------------------------------------------------------------------
+template<typename T, typename U>
+bool CT_NtwrkScan<T,U>::start_packet_capture(){
+    bool ret_val=false;
+
+
+
+
+    if(dev->isOpened()){
+
+
+        // start capture in async mode.
+        //Give a callback function to call to whenever a packet is captured and the stats object as the cookie
+            if(dev->startCapture(onPacketRecvCb, nullptr))
+                ret_val=true;
+
+    }
+
+    return ret_val;
+
+}
+
+
+// --------------------------------------------------------------------------
+
+template<typename T, typename U>
+bool CT_NtwrkScan<T,U>::stop_packet_capture(){
+
+
+    if(dev->captureActive()){
+        dev->stopCapture();
+    }
+
+    return true;
+}
+
+// --------------------------------------------------------------------------
 
 using C_NtwrkScan=CT_NtwrkScan<>;
 

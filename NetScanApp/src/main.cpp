@@ -19,6 +19,10 @@ int main(){
     a.start();
 
     //NetScan_SM::fsm_handle::dispatch(NetScan_SM::Timer_check(1));
+     bool az;
+     std::cout <<typeid (az).name()<<"\n";
+
+
 
     char c='r';
     int buff_out=12;

@@ -18,7 +18,7 @@ namespace NetScan_SM {
     using cb_t = bool(*)(int, void*);
 
 //States
-    enum class States {
+     enum class States {
         ARP_MSG_SEND = 0,
         DNS_MSG_SEND,
         ARP_MSG_PARSE,
