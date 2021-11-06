@@ -186,8 +186,17 @@ private:
         * @note
         * @warning Warning.
         */
-    bool parse_and_reverse_ipstr(std::string&);
-    bool reverse_ipstr(std::string&);
+    bool parse_and_reverse_ipstr(std::string&)const;
+    /**
+      * @brief
+      *
+      *
+      * @param none
+      * @return
+      * @note
+      * @warning Warning.
+      */
+    bool reverse_ipstr(std::string&)const;
 
     std::string dev_host_name_str{};
     const S_DeviceInfo netif_ip_mac;

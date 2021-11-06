@@ -38,7 +38,7 @@ std::pair<std::string, pcpp::IPAddress> ns::C_DnsManager::parse_dns_resp(const p
 
 
 
-bool ns::C_DnsManager::parse_and_reverse_ipstr(std::string& ipstr){
+bool ns::C_DnsManager::parse_and_reverse_ipstr(std::string& ipstr)const{
 
     bool b_ret_val=true;
     std::string::size_type ip_start_index = ipstr.find(".in-addr.arpa");
@@ -61,7 +61,7 @@ bool ns::C_DnsManager::parse_and_reverse_ipstr(std::string& ipstr){
 }
 
 
-bool ns::C_DnsManager::reverse_ipstr(std::string& ipstr){
+bool ns::C_DnsManager::reverse_ipstr(std::string& ipstr)const{
 
     std::vector<std::string> vec_str{};
     std::stringstream ss(ipstr);
@@ -78,7 +78,7 @@ bool ns::C_DnsManager::reverse_ipstr(std::string& ipstr){
    ipstr.clear();
 
    if(4==vec_str.size())
-   ipstr=vec_str[3]+"."+vec_str[2]+"."+vec_str[1]+"."+vec_str[0];
+        ipstr=vec_str[3]+"."+vec_str[2]+"."+vec_str[1]+"."+vec_str[0];
 
 
 

@@ -54,7 +54,9 @@ set(ALL_FILES
 
  )
 
+INCLUDE( ${CMAKE_SOURCE_DIR}/cmake-module/CodeCoverage.cmake )
 
+  append_coverage_compiler_flags()
 if(DEFINED UNIT_TEST)
 add_library(${PROJECT_NAME} STATIC  ${ALL_FILES} )
 else()

@@ -112,21 +112,50 @@ public:
     void run();
 
 
-    bool find_ip_in_device_list(const pcpp::IPAddress& ip){
+    /**
+     * @brief function to search ip in device list
+     *
+     *
+     * @param ip addr
+     * @return bool
+     * @note
+     * @warning
+     */
+    bool find_ip_in_device_list(const pcpp::IPAddress& ip);
 
-            bool ret_val=false;
-        auto is_ip_same = [&ip](auto& i){ return i.first.ip==ip; };
 
-        decltype (dev_table.begin()) result1 = std::find_if(begin(dev_table), end(dev_table), is_ip_same);
 
-          if(result1!=end(dev_table)){
 
-              ret_val=true;
-          }
 
-          return ret_val;
-
+    T& get_arp_instance(){
+        return *c_arp;
     }
+
+    U& get_dns_instance(){
+        return *c_dns;
+    }
+
+private:
+    //create an empty packet vector object
+    static inline  std::vector<pcpp::RawPacket> packetVec{};
+
+
+    std::vector<pcpp::IPv4Address> scan_ip_vec{};
+    common_data_t common_data{};
+    std::unique_ptr<pcpp::PcapLiveDevice> dev{nullptr};
+    pcpp::IPv4Address low_bound_ip_addr{};
+    pcpp::IPv4Address high_bound_ip_addr{};
+    dev_info_t dev_table{};
+
+    S_DeviceInfo gateway_mac_ip{ pcpp::IPAddress(""),std::string("")};
+    S_DeviceInfo netif_mac_ip{ pcpp::IPAddress(""),std::string("")};
+    std::unique_ptr<T> c_arp{nullptr};
+    std::unique_ptr<U> c_dns{nullptr};
+
+    const pcpp::PcapLiveDevice::DeviceConfiguration pcap_config{pcpp::PcapLiveDevice::DeviceMode::Promiscuous,0,0,pcpp::PcapLiveDevice::PcapDirection::PCPP_IN,0};
+
+    bool add_dev_list(const pcpp::MacAddress&);//add mac address
+    bool add_dev_list(const std::string&);//add dns hostname
 
     auto find_ip_in_device_list_return(const pcpp::IPAddress& ip) {
 
@@ -145,47 +174,30 @@ public:
        }
 
 
-    bool sendpacket(pcpp::RawPacket& packet){
-
-        return  dev->sendPacket(packet);
-    }
-
-    T& get_arp_instance(){
-        return *c_arp;
-    }
-
-    U& get_dns_instance(){
-        return *c_dns;
-    }
+    /**
+     * @brief function to send raw packet to network
+     *
+     *
+     * @param raw packet
+     * @return bool
+     * @note
+     * @warning
+     */
+    bool sendpacket(pcpp::RawPacket& packet)const;
 
 
+    /**
+     * @brief
+     *
+     *
+     * @param
+     * @return bool
+     * @note
+     * @warning
+     */
+    bool set_ntwrk_filter()const;
 
 
-
-
-
-private:
-    //create an empty packet vector object
-    static inline  std::vector<pcpp::RawPacket> packetVec{};
-   //pcpp::RawPacketVector packetVec{};
-    std::vector<pcpp::IPv4Address> scan_ip_vec{};
-    common_data_t common_data{};
-    std::unique_ptr<pcpp::PcapLiveDevice> dev{nullptr};
-    pcpp::IPv4Address low_bound_ip_addr{};
-    pcpp::IPv4Address high_bound_ip_addr{};
-    dev_info_t dev_table{};
-
-    S_DeviceInfo gateway_mac_ip{ pcpp::IPAddress(""),std::string("")};
-    S_DeviceInfo netif_mac_ip{ pcpp::IPAddress(""),std::string("")};
-    std::unique_ptr<T> c_arp{nullptr};
-    std::unique_ptr<U> c_dns{nullptr};
-
-    const pcpp::PcapLiveDevice::DeviceConfiguration pcap_config{pcpp::PcapLiveDevice::DeviceMode::Promiscuous,0,0,pcpp::PcapLiveDevice::PcapDirection::PCPP_IN,0};
-
-    bool add_dev_list(const pcpp::MacAddress&);//add mac address
-    bool add_dev_list(const std::string&);//add dns hostname
-
-    bool set_ntwrk_filter();
     static bool set_raw_packet(pcpp::RawPacket& packet){
 
                 packetVec.push_back(packet);
@@ -198,11 +210,11 @@ private:
                return packetVec;
     }
 
-    static void onPacketRecvCb(pcpp::RawPacket* packet, pcpp::PcapLiveDevice* dev, void* cookie)
+    static void onPacketRecvCb(pcpp::RawPacket* packet, [[maybe_unused]]pcpp::PcapLiveDevice* dev,[[maybe_unused]]void* cookie)
     {
             //TODO: mutex lock will be here.
         // create an empty packet vector object
-      //  packetVec.push_back(*packet);
+
           set_raw_packet(*packet);
 
         //TODO: mutex unlock will be here
@@ -217,7 +229,7 @@ private:
      * @note
      * @warning It does not need to be called again, if start function has been called
      */
-    bool start_packet_capture();
+    bool start_packet_capture()const;
 
 
     /**
@@ -229,7 +241,7 @@ private:
      * @note
      * @warning It does not need to be called again, if stop function has been called
      */
-    bool stop_packet_capture();
+    bool stop_packet_capture()const;
 
     bool init_dev_params( std::unique_ptr<pcpp::PcapLiveDevice>& dev){
 
@@ -241,16 +253,20 @@ private:
         gateway_mac_ip.ip=dev->getDefaultGateway();
          auto dns=   dev->getDnsServers();
 
-        if (c_arp == nullptr)
-                c_arp.reset(new T(netif_mac_ip,gateway_mac_ip));
-         else
+        if (c_arp == nullptr){
+              c_arp.reset(new T(netif_mac_ip,gateway_mac_ip));
+        }
+        else{
                 throw std::invalid_argument{"c_arp variable is already allocated"};
+            }
 
+        if (c_dns == nullptr){
+             c_dns.reset(new U(netif_mac_ip,gateway_mac_ip));
+        }
+         else{
+              throw std::invalid_argument{"c_dns variable is already allocated"};
+        }
 
-        if (c_dns == nullptr)
-        c_dns.reset(new U(netif_mac_ip,gateway_mac_ip));
-         else
-          throw std::invalid_argument{"c_dns variable is already allocated"};
 
         return true;
     }
@@ -269,9 +285,6 @@ private:
                     pcpp::ArpLayer* arpLayer =
                            temp_packet.getLayerOfType<pcpp::ArpLayer>();
 
-//                    if(!find_ip_in_device_list(arpLayer->getSenderIpAddr())){
-
-//                    }
 
                     common_data.set_common_data(arpLayer->getSenderIpAddr(),std::string(""),temp_packet);
 
@@ -316,13 +329,12 @@ private:
     }
 
 
+    // --------------------------------------------------------------------------
 
-  static  bool SM_Inactive_state_cb(int i,void* ptr){
-        static bool is_init=true;
+  static  bool SM_Inactive_state_cb([[maybe_unused]]int i,NetScan_SM::sm_shared_data_ptr ptr){
 
 
-      ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
-       CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->get_this_ptr());
+      auto common_data=static_cast<ns::common_data_t*>(ptr);
 
 
        common_data->set_common_data();
@@ -332,24 +344,30 @@ private:
     return true;
     }
 
+  // --------------------------------------------------------------------------
 
-   static   bool SM_Arpmsg_send_state_cb(int i,void* ptr){
+   static   bool SM_Arpmsg_send_state_cb([[maybe_unused]]int i,NetScan_SM::sm_shared_data_ptr ptr){
 
-       ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
-        CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->get_this_ptr());
+       auto common_data=static_cast<ns::common_data_t*>(ptr);
+       auto this_ptr= static_cast< CT_NtwrkScan<T,U> *>(common_data->get_this_ptr());
 
-          //  for(auto i=0;i<3";i++)
-            this_ptr->sendpacket(this_ptr->c_arp->generate_arp_req(common_data->get_scan_ip(). getIPv4()));
 
+#ifndef UNIT_TEST
+       this_ptr->sendpacket(this_ptr->c_arp->generate_arp_req(common_data->get_scan_ip(). getIPv4()));
+#endif
 
     std::cout<<"SM_Arpmsg_send_state_cb: "<< common_data->get_scan_ip().toString()<< "\n";
     return true;
     }
 
-   static   bool SM_Arpmsg_parse_state_cb(int i,void* ptr){
-       ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
-        CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->get_this_ptr());
+   static   bool SM_Arpmsg_parse_state_cb([[maybe_unused]]int i,NetScan_SM::sm_shared_data_ptr ptr){
+
+
+        auto common_data=static_cast<ns::common_data_t*>(ptr);
+        auto  this_ptr= static_cast< CT_NtwrkScan<T,U> *>(common_data->get_this_ptr());
         bool b_ret_val=false;
+
+
         S_DeviceInfo response=  this_ptr->c_arp->parse_arp_resp(common_data->get_in_packet());
 
 
@@ -357,9 +375,12 @@ private:
 
         if(response.ip==common_data->get_scan_ip() ){
             common_data->set_common_data(response.ip,response.mac_addr);
-            //common_data->mac_addr=response.mac_addr;
-            if(!this_ptr->find_ip_in_device_list(response.ip))
-            this_ptr->dev_table[response]="";
+
+
+            if(!this_ptr->find_ip_in_device_list(response.ip)){
+                    this_ptr->dev_table[response]="";
+            }
+
             b_ret_val=true;
         }
 
@@ -372,37 +393,43 @@ private:
     return b_ret_val;
     }
 
+   // --------------------------------------------------------------------------
 
-   static   bool SM_Dnsmsg_send_state_cb(int i,void* ptr){
-       ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
-        CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->get_this_ptr());
-
-        this_ptr->sendpacket(this_ptr->c_dns->generate_dns_req(S_DeviceInfo(common_data->get_scan_ip(),common_data->get_mac_addr())));
-    std::cout<<"SM_Dnsmsg_send_state_cb\n";
+   static   bool SM_Dnsmsg_send_state_cb([[maybe_unused]]int i,NetScan_SM::sm_shared_data_ptr ptr){
+        auto common_data=static_cast<ns::common_data_t*>(ptr);
+        auto this_ptr= static_cast< CT_NtwrkScan<T,U> *>(common_data->get_this_ptr());
+#ifndef UNIT_TEST
+     this_ptr->sendpacket(this_ptr->c_dns->generate_dns_req(S_DeviceInfo(common_data->get_scan_ip(),common_data->get_mac_addr())));
+#endif
+     std::cout<<"SM_Dnsmsg_send_state_cb\n";
     return true;
     }
 
+   // --------------------------------------------------------------------------
 
-  static    bool SM_Dnsmsg_parse_state_cb(int i,void* ptr){
-      ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
-       CT_NtwrkScan<> * this_ptr= static_cast< CT_NtwrkScan<> *>(common_data->get_this_ptr());
+  static    bool SM_Dnsmsg_parse_state_cb([[maybe_unused]]int i,NetScan_SM::sm_shared_data_ptr ptr){
+
+       auto common_data=static_cast<ns::common_data_t*>(ptr);
+       auto this_ptr= static_cast< CT_NtwrkScan<T,U> *>(common_data->get_this_ptr());
 
        const auto response=this_ptr->c_dns->parse_dns_resp(common_data->get_in_packet());
 
        if(response.second!=pcpp::IPAddress(""))
-       auto iter=this_ptr->find_ip_in_device_list_return(response.second);
+           auto iter=this_ptr->find_ip_in_device_list_return(response.second);
 
 
 
     std::cout<<"SM_Dnsmsg_parse_state_cb " <<response.first<<" ," << response.second.toString()<<"\n";
     return true;
     }
+  // --------------------------------------------------------------------------
 
-  static    bool SM_CommTimeout_state_cb(int i,void* ptr){
 
- ns::common_data_t* common_data=static_cast<ns::common_data_t*>(ptr);
+  static    bool SM_CommTimeout_state_cb([[maybe_unused]]int i,NetScan_SM::sm_shared_data_ptr ptr){
 
- std::cout<<"SM_CommTimeout_state_cb, " << common_data->get_scan_ip().toString()<<"\n";
+    auto common_data=static_cast<ns::common_data_t*>(ptr);
+
+     std::cout<<"SM_CommTimeout_state_cb, " << common_data->get_scan_ip().toString()<<"\n";
 
 
 
@@ -478,7 +505,7 @@ CT_NtwrkScan<T,U>::CT_NtwrkScan(const std::string& ethif_name){
 
 // --------------------------------------------------------------------------
 template<typename T, typename U>
-bool CT_NtwrkScan<T,U>::set_ntwrk_filter(){
+bool CT_NtwrkScan<T,U>::set_ntwrk_filter()const{
 
 
     // set a BPF filter for the reader - only packets that match the filter will be read
@@ -576,7 +603,7 @@ bool CT_NtwrkScan<T,U>::set_ip_range(const std::string& low_bound_ip,const std::
 
      if(true==ret_val)
      /*First of all, arp req will be sent to learn gateway mac addr*/
-     scan_ip_vec.push_back(dev->getDefaultGateway());
+         scan_ip_vec.push_back(dev->getDefaultGateway());
 
     for(auto i=low_bound_ip_addr.toBytes()[3];(ret_val==true && i<=high_bound_ip_addr.toBytes()[3] );++i){
 
@@ -602,6 +629,27 @@ bool CT_NtwrkScan<T,U>::set_ip_range(const std::string& low_bound_ip,const std::
 
     return ret_val;
 }
+
+
+// --------------------------------------------------------------------------
+template<typename T, typename U>
+bool CT_NtwrkScan<T,U>::find_ip_in_device_list(const pcpp::IPAddress& ip){
+
+        bool ret_val=false;
+    auto is_ip_same = [&ip](auto& i){ return i.first.ip==ip; };
+
+    decltype (dev_table.begin()) result1 = std::find_if(begin(dev_table), end(dev_table), is_ip_same);
+
+      if(result1!=end(dev_table)){
+
+          ret_val=true;
+      }
+
+      return ret_val;
+
+}
+
+
 
 // --------------------------------------------------------------------------
 template<typename T, typename U>
@@ -642,7 +690,7 @@ void CT_NtwrkScan<T,U>::run(){
 }
 // --------------------------------------------------------------------------
 template<typename T, typename U>
-bool CT_NtwrkScan<T,U>::start_packet_capture(){
+bool CT_NtwrkScan<T,U>::start_packet_capture()const{
     bool ret_val=false;
 
 
@@ -664,9 +712,15 @@ bool CT_NtwrkScan<T,U>::start_packet_capture(){
 
 
 // --------------------------------------------------------------------------
+template<typename T, typename U>
+bool CT_NtwrkScan<T,U>::sendpacket(pcpp::RawPacket& packet)const{
+
+    return  dev->sendPacket(packet);
+}
+// --------------------------------------------------------------------------
 
 template<typename T, typename U>
-bool CT_NtwrkScan<T,U>::stop_packet_capture(){
+bool CT_NtwrkScan<T,U>::stop_packet_capture()const{
 
 
     if(dev->captureActive()){

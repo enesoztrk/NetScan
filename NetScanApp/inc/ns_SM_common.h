@@ -16,7 +16,7 @@ namespace NetScan_SM {
     using namespace NetScan_SM_Utils;
 //callback function type
     using cb_t = bool(*)(int, void*);
-
+    using sm_shared_data_ptr= void* ;
 //States
      enum class States {
         ARP_MSG_SEND = 0,

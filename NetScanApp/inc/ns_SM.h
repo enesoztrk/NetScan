@@ -60,6 +60,7 @@ public:
 
 static void reset();
 
+virtual ~MsgStateMachine() = default;
 
 
 /* default reaction for unhandled events */
