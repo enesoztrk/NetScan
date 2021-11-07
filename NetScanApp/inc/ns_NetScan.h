@@ -414,8 +414,12 @@ private:
 
        const auto response=this_ptr->c_dns->parse_dns_resp(common_data->get_in_packet());
 
-       if(response.second!=pcpp::IPAddress(""))
-           auto iter=this_ptr->find_ip_in_device_list_return(response.second);
+       if(response.second!=pcpp::IPAddress("")){
+              auto iter=this_ptr->find_ip_in_device_list_return(response.second);
+
+              this_ptr->dev_table[iter->first]=response.first;
+       }
+
 
 
 
