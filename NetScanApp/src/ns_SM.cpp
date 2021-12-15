@@ -93,7 +93,7 @@ template<int inum>
 bool MsgStateMachine<inum>::set_state(const States& new_state) {
 
     if(new_state!=MsgStateMachine<inum>::curr_state.first)
-    MsgStateMachine<inum>::curr_state = { new_state,States_table[new_state] };
+         MsgStateMachine<inum>::curr_state = { new_state,States_table[new_state] };
 
     return true;
 }

@@ -6,7 +6,7 @@
 #include "ns_Common.h"
 namespace NetScan_SM {
 
-extern std::map<States, std::string> States_table;
+extern  std::map<States, std::string> States_table;
 
 class SM_exception : public std::logic_error {
 public:
@@ -60,6 +60,7 @@ public:
 
 static void reset();
 
+virtual ~MsgStateMachine() = default;
 
 
 /* default reaction for unhandled events */

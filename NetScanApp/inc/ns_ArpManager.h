@@ -123,7 +123,7 @@ public:
         * @note
         * @warning Warning.
         */
-      S_DeviceInfo parse_arp_resp(const pcpp::Packet& incoming_packet);
+      S_DeviceInfo parse_arp_resp(const pcpp::Packet& incoming_packet)const;
 
 
       /**

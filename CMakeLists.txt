@@ -20,8 +20,12 @@ if(DEFINED MOCK_SUPPORT)
     add_definitions("-DMOCK_SUPPORT")
 endif()
 
-add_subdirectory(NetScanApp/)
 
 if(DEFINED UNIT_TEST)
+add_definitions(-DUNIT_TEST)
 add_subdirectory(NetScanApp-UnitTest/)
 endif()
+
+add_subdirectory(NetScanApp/)
+
+

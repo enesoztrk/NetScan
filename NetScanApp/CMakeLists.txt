@@ -6,6 +6,7 @@ SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -frtti")
 set(Sources__Packet
     "src/ns_ArpManager.cpp"
     "src/ns_DnsManager.cpp"
+    "src/ns_NetScan.cpp"
 )
 
 set(Sources
@@ -53,7 +54,9 @@ set(ALL_FILES
 
  )
 
+INCLUDE( ${CMAKE_SOURCE_DIR}/cmake-module/CodeCoverage.cmake )
 
+  append_coverage_compiler_flags()
 if(DEFINED UNIT_TEST)
 add_library(${PROJECT_NAME} STATIC  ${ALL_FILES} )
 else()

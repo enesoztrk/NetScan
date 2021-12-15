@@ -13,7 +13,7 @@ return netif_ip_mac;
 
 
 
- ns::S_DeviceInfo ns::C_ArpManager::parse_arp_resp(const pcpp::Packet& incoming_packet){
+ ns::S_DeviceInfo ns::C_ArpManager::parse_arp_resp(const pcpp::Packet& incoming_packet)const{
 
     pcpp::ArpLayer* arp_packet=incoming_packet.getLayerOfType<pcpp::ArpLayer>();
 
