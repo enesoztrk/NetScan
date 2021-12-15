@@ -29,7 +29,7 @@ int nmain(){
 
 
         a.run();
-        usleep(200);
+        usleep(1000);
    }
     return 0;
 }

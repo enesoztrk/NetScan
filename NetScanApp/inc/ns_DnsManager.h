@@ -40,7 +40,7 @@ public:
        * @warning Warning.
        */
       template<typename packet_t=pcpp::Packet>
-     pcpp::RawPacket& generate_dns_req(const S_DeviceInfo&  scan_dev_info){
+     pcpp::RawPacket& generate_dns_req(const S_DeviceInfo&  scan_dev_info,bool b_mdns=false){
 
          bool b_ret_val{true};
          //packet
@@ -57,7 +57,14 @@ public:
 
          // create a new Ethernet layer,
              const pcpp::MacAddress source_mac{netif_ip_mac.mac_addr};
-             const pcpp::MacAddress dest_mac{gateway_ip_mac.mac_addr};
+             pcpp::MacAddress dest_mac{};
+
+             if(!b_mdns)
+             dest_mac=gateway_ip_mac.mac_addr;
+             else {
+                dest_mac= mdns_mac_addr;
+             }
+
 
              pcpp::EthLayer newEthernetLayer( source_mac,dest_mac,PCPP_ETHERTYPE_IP);
 
@@ -66,10 +73,16 @@ public:
          //create IPV4 layer
 
              pcpp::IPv4Layer newIPLayer(netif_ip_mac.ip.getIPv4(), gateway_ip_mac.ip.getIPv4());
+
+             if(b_mdns)
+              newIPLayer.setDstIPv4Address(mdns_ip_addr);
+
+
+
              newIPLayer.getIPv4Header()->ipId = pcpp::hostToNet16(2000);
              newIPLayer.getIPv4Header()->ipVersion=4;
              newIPLayer.getIPv4Header()->internetHeaderLength=5;
-             newIPLayer.getIPv4Header()->timeToLive = 64;
+             newIPLayer.getIPv4Header()->timeToLive = 250;
              newIPLayer.getIPv4Header()->protocol=pcpp::IPProtocolTypes::PACKETPP_IPPROTO_UDP;
 
         //create Udp Layer
@@ -77,15 +90,28 @@ public:
              std::random_device dev;
              std::mt19937 rng(dev());
              std::uniform_int_distribution<std::mt19937::result_type> dist40000(1024,40000); // distribution in range [1024,40000 ]
+              int udp_dns_port_param=C_DnsManager::udp_dns_port_num;
 
-             pcpp::UdpLayer newUdpLayer(dist40000(rng),C_DnsManager::udp_dns_port_num);
+
+             if(b_mdns)
+                udp_dns_port_param=C_DnsManager::udp_mdns_port_num;
+
+             pcpp::UdpLayer newUdpLayer(dist40000(rng),udp_dns_port_param);
+
+
+
 
          //Dns query
             pcpp::DnsLayer newDnsLayer;
 
             newDnsLayer.getDnsHeader()->numberOfAnswers=0;
-            newDnsLayer.getDnsHeader()->recursionDesired=1;
-            newDnsLayer.getDnsHeader()->transactionID=dist40000(rng);
+
+            if(!b_mdns)
+                newDnsLayer.getDnsHeader()->recursionDesired=1;
+            else
+                newDnsLayer.getDnsHeader()->recursionDesired=0;
+
+             newDnsLayer.getDnsHeader()->transactionID=dist40000(rng);
 
             std::string query_name{scan_dev_info.ip.toString()};
 
@@ -201,6 +227,9 @@ private:
     std::string dev_host_name_str{};
     const S_DeviceInfo netif_ip_mac;
     constexpr static int udp_dns_port_num=53;
+    constexpr static unsigned int udp_mdns_port_num=5353;
+    const  pcpp::IPv4Address mdns_ip_addr{"224.0.0.251"};
+     const  pcpp::MacAddress mdns_mac_addr{"01:00:5e:00:00:fb"};
     S_DeviceInfo& gateway_ip_mac;
     pcpp::RawPacket raw_packet;
 };

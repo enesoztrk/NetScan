@@ -318,7 +318,7 @@ private:
 
                     //TODO: mdns feature will be added for autoretive server
                     //https://datatracker.ietf.org/doc/html/rfc6762#page-5
-                    if(ipLayer->getSrcIPAddress()==gateway_mac_ip.ip && ipLayer->getDstIPAddress()==netif_mac_ip.ip){
+                    if( ipLayer->getDstIPAddress()==netif_mac_ip.ip){
 
                         //FIXME: will be set data
                         common_data.set_common_data(pcpp::IPAddress(),std::string(""),temp_packet);
@@ -410,8 +410,9 @@ private:
         auto common_data=static_cast<ns::common_data_t*>(ptr);
         auto this_ptr= static_cast< CT_NtwrkScan<T,U> *>(common_data->get_this_ptr());
 #ifndef UNIT_TEST
-     this_ptr->sendpacket(this_ptr->c_dns->generate_dns_req(S_DeviceInfo(common_data->get_scan_ip(),common_data->get_mac_addr())));
+     this_ptr->sendpacket(this_ptr->c_dns->generate_dns_req(S_DeviceInfo(common_data->get_scan_ip(),common_data->get_mac_addr()),true));
 #endif
+     usleep(100);
      std::cout<<"SM_Dnsmsg_send_state_cb\n";
     return true;
     }
@@ -429,6 +430,7 @@ private:
               auto iter=this_ptr->find_ip_in_device_list_return(response.second);
 
               this_ptr->dev_table[iter->first]=response.first;
+              std::cout<<"hello : "<<this_ptr->dev_table[iter->first]<<"\n\n";
        }
 
 
@@ -483,7 +485,7 @@ CT_NtwrkScan<T,U>::CT_NtwrkScan(const pcpp::IPAddress& ethif_ip){
     }
 
 
-    set_ntwrk_filter();
+ //   set_ntwrk_filter();
 
     //set instance of this pointer.This required for callback functions to get access shared data
     common_data.set_this_ptr(this);
@@ -639,7 +641,7 @@ bool CT_NtwrkScan<T,U>::set_ip_range(const std::string& low_bound_ip,const std::
 
 
          //TODO: to be deleted
-       for(auto& i:scan_ip_vec)
+      for(auto& i:scan_ip_vec)
          scan_ip_vec.push_back(i);
 
 
@@ -691,7 +693,7 @@ void CT_NtwrkScan<T,U>::run(){
         std::cout<<"===Device list===\n";
         for(auto& iter:dev_table ){
 
-            std::cout<<"IPaddr: "<<iter.first.ip.toString()<<" Mac addr: "<<iter.first.mac_addr<<"\n";
+            std::cout<<"IPaddr: "<<iter.first.ip.toString()<<" Mac addr: "<<iter.first.mac_addr<<"  Host name: "<<iter.second<<"\n";
 
 
         }
