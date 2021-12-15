@@ -254,14 +254,25 @@ private:
          auto dns=   dev->getDnsServers();
 
         if (c_arp == nullptr){
-              c_arp.reset(new T(netif_mac_ip,gateway_mac_ip));
+#ifndef UNIT_TEST
+            c_arp=std::make_unique<T>(netif_mac_ip,gateway_mac_ip);
+#else
+            c_arp.reset(new T(netif_mac_ip,gateway_mac_ip));
+#endif
         }
         else{
                 throw std::invalid_argument{"c_arp variable is already allocated"};
             }
 
         if (c_dns == nullptr){
-             c_dns.reset(new U(netif_mac_ip,gateway_mac_ip));
+
+#ifndef UNIT_TEST
+            c_dns=std::make_unique<U>(netif_mac_ip,gateway_mac_ip);
+#else
+            c_dns.reset(new U(netif_mac_ip,gateway_mac_ip));
+#endif
+
+
         }
          else{
               throw std::invalid_argument{"c_dns variable is already allocated"};
@@ -594,6 +605,9 @@ bool CT_NtwrkScan<T,U>::set_ip_range(const std::string& low_bound_ip,const std::
 
   }
 
+
+
+
     if(ret_val==true && low_bound_ip_addr.toBytes()[3]<high_bound_ip_addr.toBytes()[3]){
         ip_bytes[0]=low_bound_ip_addr.toBytes()[0];
         ip_bytes[1]=low_bound_ip_addr.toBytes()[1];
@@ -622,9 +636,7 @@ bool CT_NtwrkScan<T,U>::set_ip_range(const std::string& low_bound_ip,const std::
 
     }
 
-      //TODO: to be deleted
-       for(auto& i:scan_ip_vec)
-         scan_ip_vec.push_back(i);
+
 
          //TODO: to be deleted
        for(auto& i:scan_ip_vec)
