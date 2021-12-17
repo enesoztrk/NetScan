@@ -200,7 +200,9 @@ private:
 
     static bool set_raw_packet(pcpp::RawPacket& packet){
 
-                packetVec.push_back(packet);
+        //pcpp::RawPacket temp_raw_packet{packet.getRawData(),packet.getRawDataLen(),packet.getPacketTimeStamp(),false};
+
+                packetVec.push_back( pcpp::RawPacket{packet.getRawData(),packet.getRawDataLen(),packet.getPacketTimeStamp(),false});
 
                 return true;
     }
@@ -316,9 +318,8 @@ private:
 
 
 
-                    //TODO: mdns feature will be added for autoretive server
-                    //https://datatracker.ietf.org/doc/html/rfc6762#page-5
-                    if(ipLayer->getSrcIPAddress()==gateway_mac_ip.ip && ipLayer->getDstIPAddress()==netif_mac_ip.ip){
+
+                    if( ipLayer->getDstIPAddress()==netif_mac_ip.ip){
 
                         //FIXME: will be set data
                         common_data.set_common_data(pcpp::IPAddress(),std::string(""),temp_packet);
@@ -351,7 +352,7 @@ private:
        common_data->set_common_data();
 
 
-    std::cout<<"SM_Inactive_state_cb\n";
+   // std::cout<<"SM_Inactive_state_cb\n";
     return true;
     }
 
@@ -367,7 +368,7 @@ private:
        this_ptr->sendpacket(this_ptr->c_arp->generate_arp_req(common_data->get_scan_ip(). getIPv4()));
 #endif
 
-    std::cout<<"SM_Arpmsg_send_state_cb: "<< common_data->get_scan_ip().toString()<< "\n";
+   // std::cout<<"SM_Arpmsg_send_state_cb: "<< common_data->get_scan_ip().toString()<< "\n";
     return true;
     }
 
@@ -400,7 +401,7 @@ private:
             this_ptr->gateway_mac_ip.mac_addr=response.mac_addr;
 
 
-      std::cout<<"SM_Arpmsg_parse_state_cb, " << response.ip.toString()<<" ,"<< response.mac_addr<<"\n";
+     // std::cout<<"SM_Arpmsg_parse_state_cb, " << response.ip.toString()<<" ,"<< response.mac_addr<<"\n";
     return b_ret_val;
     }
 
@@ -410,9 +411,12 @@ private:
         auto common_data=static_cast<ns::common_data_t*>(ptr);
         auto this_ptr= static_cast< CT_NtwrkScan<T,U> *>(common_data->get_this_ptr());
 #ifndef UNIT_TEST
-     this_ptr->sendpacket(this_ptr->c_dns->generate_dns_req(S_DeviceInfo(common_data->get_scan_ip(),common_data->get_mac_addr())));
+
+     //mdns packet send
+     this_ptr->sendpacket(this_ptr->c_dns->generate_dns_req(S_DeviceInfo(common_data->get_scan_ip(),common_data->get_mac_addr()),true));
 #endif
-     std::cout<<"SM_Dnsmsg_send_state_cb\n";
+ std::cout<<"SM_Dnsmsg_send_state_cb: "<< common_data->get_scan_ip().toString()<< "\n";
+    // std::cout<<"SM_Dnsmsg_send_state_cb\n";
     return true;
     }
 
@@ -429,12 +433,13 @@ private:
               auto iter=this_ptr->find_ip_in_device_list_return(response.second);
 
               this_ptr->dev_table[iter->first]=response.first;
+              std::cout<<"hello : "<<this_ptr->dev_table[iter->first]<<"\n\n";
        }
 
 
 
 
-    std::cout<<"SM_Dnsmsg_parse_state_cb " <<response.first<<" ," << response.second.toString()<<"\n";
+  //  std::cout<<"SM_Dnsmsg_parse_state_cb " <<response.first<<" ," << response.second.toString()<<"\n";
     return true;
     }
   // --------------------------------------------------------------------------
@@ -444,7 +449,7 @@ private:
 
     auto common_data=static_cast<ns::common_data_t*>(ptr);
 
-     std::cout<<"SM_CommTimeout_state_cb, " << common_data->get_scan_ip().toString()<<"\n";
+     //std::cout<<"SM_CommTimeout_state_cb, " << common_data->get_scan_ip().toString()<<"\n";
 
 
 
@@ -639,9 +644,9 @@ bool CT_NtwrkScan<T,U>::set_ip_range(const std::string& low_bound_ip,const std::
 
 
          //TODO: to be deleted
-       for(auto& i:scan_ip_vec)
+     /* for(auto& i:scan_ip_vec)
          scan_ip_vec.push_back(i);
-
+*/
 
     return ret_val;
 }
@@ -691,7 +696,8 @@ void CT_NtwrkScan<T,U>::run(){
         std::cout<<"===Device list===\n";
         for(auto& iter:dev_table ){
 
-            std::cout<<"IPaddr: "<<iter.first.ip.toString()<<" Mac addr: "<<iter.first.mac_addr<<"\n";
+            std::cout<<"IPaddr: "<<iter.first.ip.toString()<<" Mac addr: "<<iter.first.mac_addr<<"  Host name: "<<iter.second<<"\n";
+                stop_packet_capture();
 
 
         }

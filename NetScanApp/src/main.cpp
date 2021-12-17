@@ -17,7 +17,8 @@ int nmain(){
 
     ns::C_NtwrkScan a{pcpp::IPv4Address("192.168.50.104")};
 
-    a.set_ip_range("192.168.50.1","192.168.43.110");
+    a.set_ip_range("192.168.50.1","192.168.50.110");
+
     a.start();
 
 
@@ -29,7 +30,7 @@ int nmain(){
 
 
         a.run();
-        usleep(200);
+        usleep(1000);
    }
     return 0;
 }
