@@ -31,6 +31,13 @@ int nmain(){
 
         a.run();
         usleep(1000);
+
+        if(a.is_scan_done())
+        {
+            a.run();
+            break;
+        }
    }
+
     return 0;
 }

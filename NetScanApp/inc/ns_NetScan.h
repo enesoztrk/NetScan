@@ -71,7 +71,10 @@ public:
      * @note
      * @warning
      */
-    bool stop();
+    bool stop(){
+        stop_packet_capture();
+        return true;
+    }
 
 
     /**
@@ -125,6 +128,10 @@ public:
 
 
 
+    bool is_scan_done()const{
+
+        return (scan_ip_vec.size()==0);
+    }
 
 
     T& get_arp_instance(){
@@ -142,7 +149,7 @@ private:
 
     std::vector<pcpp::IPv4Address> scan_ip_vec{};
     common_data_t common_data{};
-    std::unique_ptr<pcpp::PcapLiveDevice> dev{nullptr};
+    pcpp::PcapLiveDevice* dev{nullptr};
     pcpp::IPv4Address low_bound_ip_addr{};
     pcpp::IPv4Address high_bound_ip_addr{};
     dev_info_t dev_table{};
@@ -245,7 +252,7 @@ private:
      */
     bool stop_packet_capture()const;
 
-    bool init_dev_params( std::unique_ptr<pcpp::PcapLiveDevice>& dev){
+    bool init_dev_params( pcpp::PcapLiveDevice* dev){
 
         //network interface ip and mac addresses definition
         netif_mac_ip.ip=dev->getIPv4Address();
@@ -290,7 +297,8 @@ private:
 
         if(get_packet_vec().size()!=0){
 
-                pcpp::Packet temp_packet(&(*get_packet_vec().begin()));
+                pcpp::Packet temp_packet{};
+                temp_packet.setRawPacket(&(*get_packet_vec().begin()),false);
 
 
 
@@ -299,7 +307,7 @@ private:
                            temp_packet.getLayerOfType<pcpp::ArpLayer>();
 
 
-                    common_data.set_common_data(arpLayer->getSenderIpAddr(),std::string(""),temp_packet);
+                    common_data.set_common_data(arpLayer->getSenderIpAddr(),std::string(""), pcpp::Packet(&(*get_packet_vec().begin())));
 
 
 
@@ -467,7 +475,7 @@ template<typename T, typename U>
 CT_NtwrkScan<T,U>::CT_NtwrkScan(const pcpp::IPAddress& ethif_ip){
 
     // find the interface by IP address
-  dev.reset(pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(ethif_ip));
+  dev=pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(ethif_ip);
 
   if (dev == nullptr)
     {
@@ -503,7 +511,7 @@ CT_NtwrkScan<T,U>::CT_NtwrkScan(const pcpp::IPAddress& ethif_ip){
 template<typename T, typename U>
 CT_NtwrkScan<T,U>::CT_NtwrkScan(const std::string& ethif_name){
 
-          dev.reset(pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(ethif_name));
+          dev=pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(ethif_name);
            if (dev == nullptr)
            {
                std::cerr<<"Cannot find interface  "<<ethif_name<<"\n";
@@ -697,11 +705,11 @@ void CT_NtwrkScan<T,U>::run(){
         for(auto& iter:dev_table ){
 
             std::cout<<"IPaddr: "<<iter.first.ip.toString()<<" Mac addr: "<<iter.first.mac_addr<<"  Host name: "<<iter.second<<"\n";
-                stop_packet_capture();
+              //  stop_packet_capture();
 
 
         }
-        exit(1);
+
     }
 
 

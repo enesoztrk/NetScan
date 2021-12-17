@@ -1,7 +1,7 @@
 project(NetScanApp LANGUAGES CXX)
 
 
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -frtti")
+SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -frtti ")
 #SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 
 set(Sources__Packet

@@ -46,7 +46,7 @@ struct common_data_t{
 private:
     pcpp::IPAddress scan_ip;
     std::string mac_addr;
-    pcpp::Packet   in_packet;
+    pcpp::Packet   in_packet{};
     void* this_ptr;
 };
 
