@@ -36,9 +36,9 @@ struct Dns_MsgRecv : tinyfsm::Event {
 };
 struct Timer_check : tinyfsm::Event {
 
-    Timer_check(unsigned int tick_param) :tick{ tick_param } {}
+    Timer_check( int tick_param) :tick{ tick_param } {}
 
-    unsigned int tick{};
+    int tick{};
 
 };
 
@@ -97,7 +97,7 @@ static void register_callback(const cb_t &cb,States cb_state);
 static  ns::common_data_t buffer_data;
 
 private:
-static unsigned int tick_passed;
+static  int tick_passed;
 static inline std::pair<States, std::string> prev_state{ States::INACTIVE,States_table[States::INACTIVE] };
 static  std::pair<States, std::string>  curr_state;
 static constexpr unsigned char NUM_CB_FUNC=
@@ -110,8 +110,9 @@ static constexpr inline auto timeout_val=500;
 
 static inline std::function<bool(const int,void*)> cb_state_process[NUM_CB_FUNC]{nullptr};
 
-void increase_tick(unsigned int tick_param);
-unsigned int  get_tick(void);
+void increase_tick( int tick_param);
+ int  get_tick(void);
+void  set_tick(int);
 
 
 bool set_state(const States& new_state);
@@ -132,7 +133,7 @@ template<int inum>
 std::pair<States, std::string>  MsgStateMachine<inum>::curr_state{States::INACTIVE,States_table[States::INACTIVE]  };
 
 template<int inum>
-unsigned int  MsgStateMachine<inum>::tick_passed{};
+int  MsgStateMachine<inum>::tick_passed{};
 
 template<int inum>
 ns::common_data_t MsgStateMachine<inum>::buffer_data{};

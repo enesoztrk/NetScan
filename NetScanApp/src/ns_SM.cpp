@@ -59,7 +59,7 @@ template<int inum>
   * @warning Warning.
   */
 template<int inum>
-void MsgStateMachine<inum>::increase_tick(unsigned int tick_param){
+void MsgStateMachine<inum>::increase_tick( int tick_param){
 
   MsgStateMachine<inum>::tick_passed +=tick_param;
 }
@@ -74,9 +74,25 @@ void MsgStateMachine<inum>::increase_tick(unsigned int tick_param){
  * @warning Warning.
  */
 template<int inum>
-unsigned int  MsgStateMachine<inum>::get_tick(void){
+ int  MsgStateMachine<inum>::get_tick(void){
 
   return MsgStateMachine<inum>::tick_passed;
+}
+
+
+/**
+ * @brief
+ *
+ *
+ * @param none
+ * @return
+ * @note
+ * @warning Warning.
+ */
+template<int inum>
+void  MsgStateMachine<inum>::set_tick(int tick){
+
+   MsgStateMachine<inum>::tick_passed=tick;
 }
 
 

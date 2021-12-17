@@ -28,7 +28,7 @@ private:
            static_cast<const unsigned char>(States::INACTIVE);
 public:
   void entry() override {
-    std::cout << "Inactive State\n";
+   // std::cout << "Inactive State\n";
 
     base::set_state(States::INACTIVE);
 
@@ -65,7 +65,7 @@ private:
             static_cast<const unsigned char>(States::ARP_MSG_SEND);
 public:
   void entry() override {
-    std::cout << "Arp Send\n" << std::endl;
+ //   std::cout << "Arp Send\n" << std::endl;
 
     base::set_state(States::ARP_MSG_SEND);
 
@@ -84,7 +84,7 @@ public:
     if(!ret_val)
     {
         //error generation
-        std::cout << "Arp Send Error\n";
+       // std::cout << "Arp Send Error\n";
 
     }
 
@@ -116,7 +116,7 @@ private:
            static_cast<const unsigned char>(States::ARP_MSG_PARSE);
 public:
   void entry() override {
-       std::cout << "Arp Parse\n";
+     //  std::cout << "Arp Parse\n";
 
 
       if(nullptr==base::cb_state_process[index])
@@ -162,7 +162,7 @@ private:
             static_cast<const unsigned char>(States::DNS_MSG_SEND);
 public:
   void entry() override {
-    std::cout << "Dns Send\n";
+  //  std::cout << "Dns Send\n";
     if(nullptr==base::cb_state_process[index])
         throw SM_exception{"DnsMsgSend State Callback func is null"};
 
@@ -171,6 +171,7 @@ public:
     //reset timer
     base::reset();
     base::set_timer(true);
+     base::set_tick(-1000);
     base::set_state(States::DNS_MSG_SEND);
 
 
@@ -206,7 +207,7 @@ private:
            static_cast<const unsigned char>(States::DNS_MSG_PARSE);
 public:
   void entry() override {
-    std::cout << "Dns Parse\n";
+    //std::cout << "Dns Parse\n";
 
     if(nullptr==base::cb_state_process[index])
          throw SM_exception{"DnsMsgParse State Callback func is null"};
@@ -240,7 +241,7 @@ private:
             static_cast<const unsigned char>(States::COMM_TIMEOUT);
 public:
   void entry() override {
-    std::cout << "Communication Timeout: "<< MsgStateMachine<inum>::get_tick()<<"\n";
+ //   std::cout << "Communication Timeout: "<< MsgStateMachine<inum>::get_tick()<<"\n";
    auto ret_val= MsgStateMachine<inum>::get_tick();
     base::set_state(States::COMM_TIMEOUT);
    if(nullptr==base::cb_state_process[index])
